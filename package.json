@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "node build.js",
-    "build:overlay": "node build.js $npm_config_name",
-    "build:shared": "tsc -p tsconfig.shared.json",
-    "clean": "rm -rf build",
-    "watch": "tsc -w"
+    "build": "node esbuild.config.js",
+    "dev": "node esbuild.config.js watch",
+    "clean": "rm -rf build/*"
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
+    "esbuild-plugin-alias": "^0.2.1",
     "typescript": "^5.0.0"
   },
   "dependencies": {

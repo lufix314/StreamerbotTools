@@ -9,7 +9,11 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "composite": true
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "shared/*": ["shared/*"]
+    }
   },
   "include": ["shared/**/*", "tools/**/*"],
   "exclude": ["node_modules", "build"]
