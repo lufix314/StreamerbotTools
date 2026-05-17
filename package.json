@@ -1,0 +1,18 @@
+{
+  "name": "streamerbot_tools",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "build:overlay": "node build.js $npm_config_name",
+    "build:shared": "tsc -p tsconfig.shared.json",
+    "clean": "rm -rf build",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@streamerbot/client": "^1.12.2"
+  }
+}

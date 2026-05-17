@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Queue</title>
+    <style>
+      :root {
+        --queue-font: "Segoe UI", Roboto, sans-serif;
+        --queue-color: #ffffff;
+        --queue-padding: 20px;
+        --queue-max-width: 400px;
+
+        --header-font-size: 24px;
+        --header-font-weight: 700;
+        --header-margin-bottom: 12px;
+        --header-padding-bottom: 8px;
+        --header-border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        --header-text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+
+        --viewer-font-size: 20px;
+        --viewer-padding: 6px 0;
+        --viewer-text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+
+        --slide-duration: 0.3s;
+        --slide-stagger: 0.05s;
+
+        --live-dot-color: #9147ff;
+        --live-dot-size: 10px;
+        --live-dot-margin-right: 8px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: transparent;
+        font-family: var(--queue-font);
+        color: var(--queue-color);
+        padding: var(--queue-padding);
+      }
+
+      #queue-container {
+        max-width: var(--queue-max-width);
+      }
+
+      #queue-header {
+        font-size: var(--header-font-size);
+        font-weight: var(--header-font-weight);
+        text-shadow: var(--header-text-shadow);
+        margin-bottom: var(--header-margin-bottom);
+        padding-bottom: var(--header-padding-bottom);
+        border-bottom: var(--header-border-bottom);
+      }
+
+      .viewer-entry {
+        font-size: var(--viewer-font-size);
+        padding: var(--viewer-padding);
+        text-shadow: var(--viewer-text-shadow);
+        opacity: 0;
+        transform: translateX(-10px);
+        animation: slideIn var(--slide-duration) ease forwards;
+        display: flex;
+        align-items: center;
+      }
+
+      .live-dot {
+        width: var(--live-dot-size);
+        height: var(--live-dot-size);
+        border-radius: 50%;
+        background: var(--live-dot-color);
+        margin-right: var(--live-dot-margin-right);
+        flex-shrink: 0;
+      }
+
+      @keyframes slideIn {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      #no-connection {
+        font-style: italic;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="queue-container">
+      <div id="queue-header">Queue</div>
+      <div id="queue-list">
+        <div id="no-connection">Overlay Could not connect to Streamer.bot</div>
+      </div>
+    </div>
+
+    <script type="module" src="tools/play_with_viewers/index.js">
+    </script>
+  </body>
+</html>
