@@ -1,15 +1,15 @@
 import type { StreamerbotClient } from "@streamerbot/client";
-import { OVERLAY_CONFIG } from "./config.js";
 
 declare global {
   interface Window {
     StreamerbotClient: typeof StreamerbotClient;
+    overlayConfig: OverlayConfig;
   }
 }
 
 export function getClient(callback: (client: StreamerbotClient) => void) {
   const fileConfig =
-    typeof OVERLAY_CONFIG !== "undefined" ? OVERLAY_CONFIG : {};
+    typeof window.overlayConfig !== "undefined" ? window.overlayConfig : {};
   const urlParams = new URLSearchParams(window.location.search);
 
   const sbHost = urlParams.get("host") || fileConfig.host || "127.0.0.1";

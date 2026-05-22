@@ -19,9 +19,9 @@ async function getTools() {
 function getBuildConfig(toolName, watch = false) {
   const toolDir = join(TOOLS_DIR, toolName);
   const outDir = join(BUILD_DIR, toolName);
-  const indexPath = join(toolDir, "index.ts");
   const htmlPath = join(toolDir, "overlay.html");
-  const configPath = join(ROOT_DIR, "shared", "config.ts");
+  const indexPath = join(toolDir, "index.ts");
+  const configPath = join(toolDir, "config.ts");
 
   const commonOptions = {
     bundle: true,
@@ -35,11 +35,11 @@ function getBuildConfig(toolName, watch = false) {
         "shared/config": join(ROOT_DIR, "shared", "config.ts"),
       }),
     ],
-    sourcemap: !watch,
-    minify: !watch,
+    sourcemap: watch,
+    minify: false,
   };
 
-  return { commonOptions, toolName, outDir, htmlPath, configPath };
+  return { commonOptions, toolName, outDir, htmlPath, indexPath, configPath };
 }
 
 async function copyHtmlWithConfig(toolName, outDir, htmlPath) {
@@ -60,24 +60,17 @@ async function buildAll() {
   const configs = tools.map((tool) => getBuildConfig(tool, false));
 
   const promises = configs.map(
-    async ({ commonOptions, toolName, outDir, htmlPath, configPath }) => {
-      const indexPath = join(TOOLS_DIR, toolName, "index.ts");
-
+    async ({
+      commonOptions,
+      toolName,
+      outDir,
+      htmlPath,
+      indexPath,
+      configPath,
+    }) => {
       await build({
         ...commonOptions,
-        entryPoints: [indexPath],
-      });
-
-      const fs = await import("fs");
-      await build({
-        entryPoints: [configPath],
-        outfile: join(outDir, "config.js"),
-        bundle: true,
-        platform: "browser",
-        target: "es2020",
-        format: "esm",
-        minify: false,
-        sourcemap: false,
+        entryPoints: [indexPath, configPath],
       });
 
       await copyHtmlWithConfig(toolName, outDir, htmlPath);
