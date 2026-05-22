@@ -1,0 +1,89 @@
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all tools
+        run: pnpm build
+
+      - name: Create tool zips
+        run: |
+          for tool_dir in build/*/; do
+            tool_name=$(basename "$tool_dir")
+            cd "$tool_dir"
+            zip -r "../${tool_name}.zip" .
+            cd ..
+          done
+
+      - name: Upload tool zips as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-zips
+          path: "*.zip"
+
+      - name: Upload build directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: build/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download tool zips
+        uses: actions/download-artifact@v4
+        with:
+          name: tool-zips
+          path: ./
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.zip"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build files
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: ./build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: ./build
+          keep_files: false
