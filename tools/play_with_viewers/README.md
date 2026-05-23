@@ -2,83 +2,16 @@
 
 [Streamer.bot](https://streamer.bot) actions and commands for managing a queue to play with viewers and an OBS browser source overlay that connects to Streamer.bot via WebSocket and displays the queue.
 
-The project consists of a single self-contained HTML file (`overlay.html`), an optional local configuration file (`config.js`), and the Streamer.bot configuration that provides all the commands and actions needed to run the queue.
-
----
-
-## Streamer.bot Setup
-
-### 1. Enable the WebSocket Server
-
-The overlay communicates with Streamer.bot through its built-in WebSocket server. To enable it:
-
-2. Go to **Servers/Clients > WebSocket Server** in Streamer.bot.
-3. Set the **Host**, **Port**, and **Endpoint** values if needed (the defaults are fine for most setups).
-4. If you want to protect the connection, enable **Authentication** and set a **Password**.
-5. Click **Start Server**.
-
-If you plan on using the overlay more often consider enabling **Auto Start** of the WebSocket.
-
-### 2. Import the Actions and Commands
-
-Import the provided `.sb` file into Streamer.bot to get everything you need:
-
-1. Open the file [here](https://raw.githubusercontent.com/lufix314/PlayWithViewersOverlay/refs/heads/main/bot.sb).
-2. Click **Import** in Streamer.bot
-3. Copy and Paste the contents of the `.sb` file into the text field
-4. Confirm the import
-
-This will add all necessary commands and actions to your setup.
-
-The imported actions manage a Streamer.bot **global variable** called `viewerQueue`. If you want to clear the queue manually you can delete it. For configuring how many players are _LIVE_ at the same time, create a global variable `viewerLive` with a corresponding value (defaults to `0`).
-
-## Adding the Overlay to OBS
-
-There are two ways to set up the overlay as a Browser Source in OBS.
-
-### Method 1 - Remote URL
-
-You can point OBS directly at the raw GitHub URL of `overlay.html` and pass configuration through URL search parameters. This is useful for testing, but comes with caveats.
-
-1. In OBS, add a new **Browser Source**.
-2. In the **URL** field, enter the following URL with your settings as query parameters. For example:
-
-   ```
-   https://lufix314.github.io/PlayWithViewersOverlay/overlay.html?host=127.0.0.1&port=8080&endpoint=/&password=secret
-   ```
-
-3. Set the width and height and click **OK**.
-
-> [!WARNING]
-> When you use URL parameters, they are included in the HTTP request to the GitHub server, even though all page processing happens locally in the browser. This means your WebSocket password (if set) might be visible to third parties.
-
-### Method 2 - Local File
-
-This method keeps your configuration on disk and avoids sending any credentials over the network.
-
-1. Download the `play_with_viewers.zip` from the latest [release](https://github.com/lufix314/PlayWithViewersOverlay/releases) and unzip it.
-2. Edit `config.js` to match your Streamer.bot WebSocket settings:
-
-   ```js
-   var OVERLAY_CONFIG = {
-     host: "127.0.0.1",
-     port: 8080,
-     endpoint: "/",
-     password: "your-password",
-   };
-   ```
-
-3. In OBS, add a new **Browser Source**.
-4. Check **Local file** and browse to the `overlay.html` in the downloaded directory.
-5. Set the width and height to your liking and click **OK**.
-
 ## Configuration Options
 
-All WebSocket connection settings can be configured. If a setting is not provided the overlay will automatically use the default. If no password is given the overlay will try to connect without authentication.
+| Option     | Default       | Description                                       |
+| ---------- | ------------- | ------------------------------------------------- |
+| `host`     | `"127.0.0.1"` | Host address of the Streamer.bot WebSocket server |
+| `port`     | `8080`        | Port of the Streamer.bot WebSocket server         |
+| `endpoint` | `"/"`         | Endpoint of the Streamer.bot WebSocket server     |
+| `password` |               | Password for the Streamer.bot WebSocket server    |
 
 ## Custom CSS
-
-OBS Browser Sources have a **Custom CSS** field in their properties dialog. You can use this to restyle the overlay without editing any source files.
 
 The overlay exposes a set of CSS custom properties (variables). Paste the following into the OBS Custom CSS field and adjust the values to match your stream aesthetic.
 
