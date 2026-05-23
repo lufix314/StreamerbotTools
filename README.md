@@ -59,13 +59,13 @@ This adds all the necessary commands and actions to your Streamer.bot installati
 #### Option A: URL Parameters (Quick, Automatic updates)
 
 1. In OBS, add a new **Browser Source**
-2. Set the URL to `lufix314.github.io/streamerbot_tools/<tool>/overlay.html`
+2. Set the URL to `lufix314.github.io/StreamerbotTools/<tool>/overlay.html`
 3. Click **OK**
 
 You can configure the Overlay using URL search parameters:
 
 ```
-lufix314.github.io/streamerbot_tools/<tool>/overlay.html?port=8090&password=secret
+lufix314.github.io/StreamerbotTools/<tool>/overlay.html?port=8090&password=secret
 ```
 
 The available options are listed in the tool's `README.md`.
