@@ -13,13 +13,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: pnpm/action-setup@v6
         with:
-          node-version: "20"
-          cache: "pnpm"
-
-      - name: Install pnpm
-        run: npm install -g pnpm
+          version: 10
+          cache: true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
