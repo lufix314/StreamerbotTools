@@ -6,7 +6,7 @@ Each tool is available as a standalone ZIP in the [Releases](https://github.com/
 
 ## Quick Start
 
-1. **Download** a tool from the [Releases](https://github.com/lufix314/streamerbot_tools/releases) page
+1. **Download** a tool from the [Releases](https://github.com/lufix314/StreamerbotTools/releases) page
 2. **Extract** the ZIP file to a folder on your computer
 3. **Import** the `.sb` file into Streamer.bot
 

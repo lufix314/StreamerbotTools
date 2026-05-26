@@ -1,13 +1,15 @@
 import { build, context } from "esbuild";
 import alias from "esbuild-plugin-alias";
-import { readdir } from "fs/promises";
+import { readdir, writeFile, readFile } from "fs/promises";
+import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = __dirname;
+const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 const TOOLS_DIR = join(ROOT_DIR, "tools");
 const BUILD_DIR = join(ROOT_DIR, "build");
+
+const CDN_SCRIPT = `  <script src="https://cdn.jsdelivr.net/npm/@streamerbot/client/dist/streamerbot-client.js"></script>\n`;
 
 async function getTools() {
   const tools = await readdir(TOOLS_DIR, { withFileTypes: true });
@@ -16,12 +18,28 @@ async function getTools() {
     .map((dirent) => dirent.name);
 }
 
-function getBuildConfig(toolName, watch = false) {
+async function getSharedAliases() {
+  const sharedDir = join(ROOT_DIR, "shared");
+  const files = await readdir(sharedDir, { withFileTypes: true });
+  const aliases = {};
+  for (const file of files) {
+    if (file.isFile() && file.name.endsWith(".ts")) {
+      const name = file.name.replace(/\.ts$/, "");
+      aliases[`shared/${name}`] = join(sharedDir, file.name);
+    }
+  }
+  return aliases;
+}
+
+async function getBuildConfig(toolName, watch = false) {
   const toolDir = join(TOOLS_DIR, toolName);
   const outDir = join(BUILD_DIR, toolName);
+
   const htmlPath = join(toolDir, "overlay.html");
   const indexPath = join(toolDir, "index.ts");
   const configPath = join(toolDir, "config.ts");
+
+  const sharedAliases = await getSharedAliases();
 
   const commonOptions = {
     bundle: true,
@@ -29,12 +47,7 @@ function getBuildConfig(toolName, watch = false) {
     platform: "browser",
     target: "es2020",
     format: "esm",
-    plugins: [
-      alias({
-        "shared/client": join(ROOT_DIR, "shared", "client.ts"),
-        "shared/config": join(ROOT_DIR, "shared", "config.ts"),
-      }),
-    ],
+    plugins: [alias({ ...sharedAliases })],
     sourcemap: watch,
     minify: false,
   };
@@ -43,21 +56,20 @@ function getBuildConfig(toolName, watch = false) {
 }
 
 async function copyHtmlWithConfig(toolName, outDir, htmlPath) {
-  const fs = await import("fs");
-  const cdnScript = `<script src="https://cdn.jsdelivr.net/npm/@streamerbot/client/dist/streamerbot-client.js"></script>\n    `;
+  if (existsSync(htmlPath)) {
+    let htmlContent = await readFile(htmlPath, "utf-8");
+    htmlContent = htmlContent.replace(/(<\/head>)/, `${CDN_SCRIPT}$1`);
 
-  if (fs.existsSync(htmlPath)) {
-    let htmlContent = await fs.promises.readFile(htmlPath, "utf-8");
-    htmlContent = htmlContent.replace(/(<\/head>)/, `${cdnScript}$1`);
-
-    await fs.promises.writeFile(join(outDir, "overlay.html"), htmlContent);
+    await writeFile(join(outDir, "overlay.html"), htmlContent);
     console.log(`Copied and updated overlay.html for ${toolName}`);
   }
 }
 
 async function buildAll() {
   const tools = await getTools();
-  const configs = tools.map((tool) => getBuildConfig(tool, false));
+  const configs = await Promise.all(
+    tools.map((tool) => getBuildConfig(tool, false)),
+  );
 
   const promises = configs.map(
     async ({
@@ -84,17 +96,15 @@ async function buildAll() {
 
 async function watchAll() {
   const tools = await getTools();
-  const configs = tools.map((tool) => getBuildConfig(tool, true));
+  const configs = await Promise.all(
+    tools.map((tool) => getBuildConfig(tool, true)),
+  );
 
   const contexts = await Promise.all(
     configs.map(async ({ commonOptions, toolName, outDir, htmlPath }) => {
       const ctx = await context({
         ...commonOptions,
         plugins: [
-          alias({
-            "shared/client": join(ROOT_DIR, "shared", "client.ts"),
-            "shared/config": join(ROOT_DIR, "shared", "config.ts"),
-          }),
           {
             name: "html-copier",
             setup(build) {
