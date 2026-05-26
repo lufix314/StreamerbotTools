@@ -60,7 +60,8 @@ jobs:
             cd ..
           done
 
-          echo $(ls build/*.zip)
+          echo $(pwd)
+          echo $(ls *.zip)
 
       - name: Create release
         uses: softprops/action-gh-release@v2
