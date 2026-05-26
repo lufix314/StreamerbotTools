@@ -56,7 +56,7 @@ jobs:
 
             # Create zip from combined directory
             cd "$tool_dir"
-            zip -r "${tool_name}.zip" .
+            zip -r "../${tool_name}.zip" .
             cd ..
           done
 
