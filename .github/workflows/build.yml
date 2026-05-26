@@ -36,11 +36,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download tool zips
+      - uses: actions/checkout@v4
+
+      - name: Download build files
         uses: actions/download-artifact@v4
         with:
           name: build-files
-          path: ./
+          path: ./build
 
       - name: Create tool zips
         run: |
