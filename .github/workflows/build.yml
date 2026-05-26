@@ -24,21 +24,6 @@ jobs:
       - name: Build all tools
         run: pnpm build
 
-      - name: Create tool zips
-        run: |
-          for tool_dir in build/*/; do
-            tool_name=$(basename "$tool_dir")
-            cd "$tool_dir"
-            zip -r "../${tool_name}.zip" .
-            cd ..
-          done
-
-      - name: Upload tool zips as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: tool-zips
-          path: "*.zip"
-
       - name: Upload build directory
         uses: actions/upload-artifact@v4
         with:
@@ -51,13 +36,20 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download tool zips
         uses: actions/download-artifact@v4
         with:
-          name: tool-zips
+          name: build-files
           path: ./
+
+      - name: Create tool zips
+        run: |
+          for tool_dir in ./*/; do
+            tool_name=$(basename "$tool_dir")
+            cd "$tool_dir"
+            zip -r "../${tool_name}.zip" .
+            cd ..
+          done
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -70,17 +62,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download build files
         uses: actions/download-artifact@v4
         with:
           name: build-files
           path: ./build
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ github.token }}
-          publish_dir: ./build
-          keep_files: false
+          path: "./build"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
