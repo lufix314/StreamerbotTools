@@ -60,10 +60,13 @@ jobs:
             cd ..
           done
 
+          echo $(ls build/*.zip)
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: "build/*.zip"
+          working_directory: build
+          files: "*.zip"
 
   deploy:
     needs: build
