@@ -54,7 +54,7 @@ jobs:
             find "$source_dir" -maxdepth 1 -type f ! -name "*.ts" ! -name "*.html" -exec cp {} "$tool_dir/" \;
 
             # Create zip from combined directory
-            zip -r "../${tool_name}.zip" $tool_dir
+            zip -r "${tool_name}.zip" $tool_dir
           done
 
       - name: Create release
