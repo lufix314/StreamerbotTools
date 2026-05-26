@@ -2,7 +2,7 @@
 
 A collection of standalone tools and overlays for Streamer.bot.
 
-Each tool is available as a standalone ZIP in the [Releases](https://github.com/lufix314/streamerbot_tools/releases) page!
+Each tool is available as a standalone ZIP in the [Releases](https://github.com/lufix314/StreamerbotTools/releases) page!
 
 ## Quick Start
 
