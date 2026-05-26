@@ -46,7 +46,8 @@ jobs:
 
       - name: Create tool zips
         run: |
-          for tool_dir in build/*/; do
+          cd "build"
+          for tool_dir in ./*/; do
             tool_name=$(basename "$tool_dir")
             source_dir="tools/$tool_name"
 
@@ -54,7 +55,9 @@ jobs:
             find "$source_dir" -maxdepth 1 -type f ! -name "*.ts" ! -name "*.html" -exec cp {} "$tool_dir/" \;
 
             # Create zip from combined directory
+            cd "$tool_dir"
             zip -r "${tool_name}.zip" $tool_dir
+            cd ..
           done
 
       - name: Create release
