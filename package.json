@@ -1,6 +1,6 @@
 {
   "name": "streamerbot_tools",
-  "version": "0.1.14",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.js",
