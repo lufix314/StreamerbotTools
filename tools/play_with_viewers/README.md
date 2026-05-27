@@ -8,7 +8,7 @@ The actions added to Streamer.bot are configurable. Add the following to your _P
 
 | Option       | Default | Description                                                      |
 | ------------ | ------- | ---------------------------------------------------------------- |
-| `viewerLive` | `1`     | Number of viewers in the queue that can be live at the same time |
+| `viewerLive` | `0`     | Number of viewers in the queue that can be live at the same time |
 
 ## Configuration Options
 
