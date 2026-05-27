@@ -2,6 +2,14 @@
 
 [Streamer.bot](https://streamer.bot) actions and commands for managing a queue to play with viewers and an OBS browser source overlay that connects to Streamer.bot via WebSocket and displays the queue.
 
+## Streamer.bot Variables
+
+The actions added to Streamer.bot are configurable. Add the following to your _Persisted Global_ Variables to change their behaviour.
+
+| Option       | Default | Description                                                      |
+| ------------ | ------- | ---------------------------------------------------------------- |
+| `viewerLive` | `1`     | Number of viewers in the queue that can be live at the same time |
+
 ## Configuration Options
 
 | Option     | Default       | Description                                       |

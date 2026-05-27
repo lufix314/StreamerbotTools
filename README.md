@@ -52,7 +52,7 @@ Each tool comes with a `.sb` file containing the Streamer.bot actions and comman
 3. Drag the `.sb` file into the Import Window
 4. Confirm the Import
 
-This adds all the necessary commands and actions to your Streamer.bot installation.
+This adds all the necessary commands and actions to your Streamer.bot installation. Sometimes the actions can be configured using Global Variables in Streamer.bot. See the tool's `README.md` for the available options.
 
 ### Step 3: Add Overlay to OBS
 
