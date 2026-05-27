@@ -68,6 +68,9 @@ You can configure the Overlay using URL search parameters:
 lufix314.github.io/StreamerbotTools/<tool>/overlay.html?port=8090&password=secret
 ```
 
+> [!NOTE]
+> `<tool>` is the name of the tool in the `tools/` directory. Play with Viewers for example would be `play_with_viewers`.
+
 The available options are listed in the tool's `README.md`.
 
 > [!WARNING]
