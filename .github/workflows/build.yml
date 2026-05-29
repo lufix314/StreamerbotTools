@@ -49,10 +49,6 @@ jobs:
           cd "build"
           for tool_dir in ./*/; do
             tool_name=$(basename "$tool_dir")
-            source_dir="../tools/$tool_name"
-
-            # Copy non-source files from source to build directory
-            find "$source_dir" -maxdepth 1 -type f ! -name "*.ts" ! -name "*.html" ! -name "*.cs" -exec cp {} "$tool_dir/" \;
 
             # Create zip from combined directory
             cd "$tool_dir"

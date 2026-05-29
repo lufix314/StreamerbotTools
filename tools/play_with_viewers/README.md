@@ -19,6 +19,28 @@ The actions added to Streamer.bot are configurable. Add the following to your _P
 | `endpoint` | `"/"`         | Endpoint of the Streamer.bot WebSocket server     |
 | `password` |               | Password for the Streamer.bot WebSocket server    |
 
+## Commands
+
+The following chat commands are available for queue management:
+
+### Everyone
+
+| Command                      | Description                                                                                                |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `!join`                      | Add yourself to the queue. If you are already in the queue this shows your position.                       |
+| `!leave`                     | Remove yourself from the queue                                                                             |
+| `!queue ?{"live" or number}` | Show the first _x_ entries of the queue in the chat. If "_live_" is given only live viewers will be shown. |
+|                              | If no number is given the full queue is shown.                                                             |
+
+### Moderators
+
+| Command             | Description                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `!add {user}`       | Add a user to the queue                                                                           |
+| `!remove {user}`    | Remove a user from the queue                                                                      |
+| `!rotate ?{number}` | Rotate the queue by the specified number of viewers. Rotate by **one** if no number is specified. |
+| `!next ?{number}`   | Move the queue by the specified number of viewers. Move by **one** if no number is specified      |
+
 ## Custom CSS
 
 The overlay exposes a set of CSS custom properties (variables). Paste the following into the OBS Custom CSS field and adjust the values to match your stream aesthetic.

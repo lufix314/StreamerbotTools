@@ -1,8 +1,8 @@
 import { build, context } from "esbuild";
 import alias from "esbuild-plugin-alias";
-import { readdir, writeFile, readFile } from "fs/promises";
+import { readdir, writeFile, readFile, copyFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, basename, relative } from "path";
 import { fileURLToPath } from "url";
 
 const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -10,6 +10,8 @@ const TOOLS_DIR = join(ROOT_DIR, "tools");
 const BUILD_DIR = join(ROOT_DIR, "build");
 
 const CDN_SCRIPT = `  <script src="https://cdn.jsdelivr.net/npm/@streamerbot/client/dist/streamerbot-client.js"></script>\n`;
+
+const IGNORED_ASSETS = ["ts", "html", "cs"];
 
 async function getTools() {
   const tools = await readdir(TOOLS_DIR, { withFileTypes: true });
@@ -35,8 +37,14 @@ async function getBuildConfig(toolName, watch = false) {
   const toolDir = join(TOOLS_DIR, toolName);
   const outDir = join(BUILD_DIR, toolName);
 
-  const htmlPath = join(toolDir, "overlay.html");
-  const indexPath = join(toolDir, "index.ts");
+  const htmlPaths = [
+    join(toolDir, "overlay.html"),
+    join(toolDir, "dashboard.html"),
+  ].filter((p) => existsSync(p));
+  const indexPaths = [
+    join(toolDir, "overlay.ts"),
+    join(toolDir, "dashboard.ts"),
+  ].filter((p) => existsSync(p));
   const configPath = join(toolDir, "config.ts");
 
   const sharedAliases = await getSharedAliases();
@@ -52,16 +60,36 @@ async function getBuildConfig(toolName, watch = false) {
     minify: false,
   };
 
-  return { commonOptions, toolName, outDir, htmlPath, indexPath, configPath };
+  return { commonOptions, toolName, outDir, htmlPaths, indexPaths, configPath };
 }
 
-async function copyHtmlWithConfig(toolName, outDir, htmlPath) {
-  if (existsSync(htmlPath)) {
+async function copyHtmlWithConfig(toolName, outDir, htmlPaths) {
+  htmlPaths.forEach(async (htmlPath) => {
+    let fileName = basename(htmlPath);
+
     let htmlContent = await readFile(htmlPath, "utf-8");
     htmlContent = htmlContent.replace(/(<\/head>)/, `${CDN_SCRIPT}$1`);
 
-    await writeFile(join(outDir, "overlay.html"), htmlContent);
+    await writeFile(join(outDir, fileName), htmlContent);
     console.log(`Copied and updated overlay.html for ${toolName}`);
+  });
+}
+
+async function copyAssets(toolDir, outDir) {
+  const entries = await readdir(toolDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const sourcePath = join(toolDir, entry.name);
+    const destPath = join(outDir, entry.name);
+
+    if (entry.isFile()) {
+      const ext = basename(entry.name).split(".").pop();
+      if (!IGNORED_ASSETS.includes(ext) && !entry.name.startsWith(".")) {
+        await mkdir(dirname(destPath), { recursive: true });
+        await copyFile(sourcePath, destPath);
+        console.log(`Copied asset: ${entry.name} for ${basename(toolDir)}`);
+      }
+    }
   }
 }
 
@@ -76,17 +104,24 @@ async function buildAll() {
       commonOptions,
       toolName,
       outDir,
-      htmlPath,
-      indexPath,
+      htmlPaths,
+      indexPaths,
       configPath,
     }) => {
+      const toolDir = join(TOOLS_DIR, toolName);
+
       await build({
         ...commonOptions,
-        entryPoints: [indexPath, configPath],
+        entryPoints: [
+          ...indexPaths,
+          ...(existsSync(configPath) ? [configPath] : []),
+        ],
       });
 
-      await copyHtmlWithConfig(toolName, outDir, htmlPath);
+      await copyHtmlWithConfig(toolName, outDir, htmlPaths);
+      await copyAssets(toolDir, outDir);
       console.log(`Built: ${toolName}`);
+      console.log();
     },
   );
 
@@ -101,23 +136,38 @@ async function watchAll() {
   );
 
   const contexts = await Promise.all(
-    configs.map(async ({ commonOptions, toolName, outDir, htmlPath }) => {
-      const ctx = await context({
-        ...commonOptions,
-        plugins: [
-          {
-            name: "html-copier",
-            setup(build) {
-              build.onEnd(async () => {
-                await copyHtmlWithConfig(toolName, outDir, htmlPath);
-              });
+    configs.map(
+      async ({
+        commonOptions,
+        toolName,
+        outDir,
+        htmlPaths,
+        indexPaths,
+        configPath,
+      }) => {
+        const toolDir = join(TOOLS_DIR, toolName);
+        const ctx = await context({
+          ...commonOptions,
+          entryPoints: [
+            ...indexPaths,
+            ...(existsSync(configPath) ? [configPath] : []),
+          ],
+          plugins: [
+            {
+              name: "assets-copier",
+              setup(build) {
+                build.onEnd(async () => {
+                  await copyHtmlWithConfig(toolName, outDir, htmlPaths);
+                  await copyAssets(toolDir, outDir);
+                });
+              },
             },
-          },
-        ],
-      });
-      console.log(`Watching: ${toolName}`);
-      return ctx;
-    }),
+          ],
+        });
+        console.log(`Watching: ${toolName}`);
+        return ctx;
+      },
+    ),
   );
 
   await Promise.all(contexts.map((ctx) => ctx.watch()));
