@@ -22,6 +22,10 @@ _If an overlay exists:_
 
 Display a live queue of viewers waiting to play with you. Perfect for gaming streams where you interact with viewers one-on-one.
 
+### [Points System](/tools/points/README.md)
+
+Basic points system, that awards present viewers.
+
 ## Prerequisites
 
 Before using any tool, make sure you have:
