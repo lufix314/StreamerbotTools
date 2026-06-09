@@ -45,24 +45,25 @@
         min-height: 100vh;
       }
 
+      h1,
+      h2 {
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
       h1 {
         font-size: 24pt;
         margin-bottom: 20px;
-        color: var(--text-color);
       }
 
       h2 {
         font-size: 18pt;
-        margin-bottom: 12px;
-        color: var(--text-color);
       }
 
       .hint {
         font-size: 12pt;
         font-weight: 200;
-        color: var(--text-color);
         opacity: 0.8;
-        vertical-align: center;
       }
 
       section {
@@ -82,7 +83,6 @@
 
       label {
         font-size: 14px;
-        color: var(--text-color);
       }
 
       input[type="number"],
@@ -112,8 +112,13 @@
         transition: background 0.2s;
       }
 
-      button:hover {
+      button:hover:not(:disabled) {
         background: var(--accent-hover);
+      }
+
+      button:focus {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
       }
 
       button:disabled {
@@ -148,7 +153,7 @@
         cursor: grab;
         transition:
           transform 0.2s,
-          background 0.2s;
+          border-color 0.2s;
       }
 
       .queue-item:hover {
@@ -195,43 +200,89 @@
         padding: 40px;
       }
 
+      main {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
       .hidden {
         display: none !important;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 12px;
+        }
+
+        .quick-actions {
+          flex-direction: column;
+          gap: 12px;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Queue Dashboard</h1>
+    <main>
+      <h1>Queue Dashboard</h1>
 
-    <section>
-      <h2>Settings</h2>
-      <div class="input-group">
-        <label for="viewer-live">Viewers Live:</label>
-        <input type="number" id="viewer-live" min="0" max="100" value="1" />
-        <button id="save-live-btn">Save</button>
-      </div>
-    </section>
-
-    <section>
-      <h2>Quick Actions</h2>
-      <div class="quick-actions">
-        <div class="action-row">
-          <input type="number" id="rotate-count" min="1" max="100" value="1" />
-          <button id="rotate-btn">Rotate</button>
+      <section aria-labelledby="settings-heading">
+        <h2 id="settings-heading">Settings</h2>
+        <div class="input-group">
+          <label for="viewer-live">Viewers Live:</label>
+          <input
+            type="number"
+            id="viewer-live"
+            min="0"
+            max="100"
+            value="1"
+            aria-describedby="viewer-live-hint"
+          />
+          <span id="viewer-live-hint" class="hidden"
+            >Enter number of live viewers</span
+          >
+          <button id="save-live-btn">Save</button>
         </div>
-        <div class="action-row">
-          <input type="number" id="next-count" min="1" max="100" value="1" />
-          <button id="next-btn">Next</button>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section>
-      <h2>Queue <span class="hint">(drag to reorder)</span></h2>
-      <ul id="queue-list" class="queue-list">
-        <li class="empty-queue">No viewers in queue</li>
-      </ul>
-    </section>
+      <section aria-labelledby="actions-heading">
+        <h2 id="actions-heading">Quick Actions</h2>
+        <div class="quick-actions">
+          <div class="action-row">
+            <label for="rotate-count" class="hidden">Rotate count:</label>
+            <input
+              type="number"
+              id="rotate-count"
+              min="1"
+              max="100"
+              value="1"
+              aria-label="Rotate count"
+            />
+            <button id="rotate-btn">Rotate</button>
+          </div>
+          <div class="action-row">
+            <label for="next-count" class="hidden">Next count:</label>
+            <input
+              type="number"
+              id="next-count"
+              min="1"
+              max="100"
+              value="1"
+              aria-label="Next count"
+            />
+            <button id="next-btn">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="queue-heading">
+        <h2 id="queue-heading">
+          Queue <span class="hint">(drag to reorder)</span>
+        </h2>
+        <ul id="queue-list" class="queue-list" role="list">
+          <li class="empty-queue">No viewers in queue</li>
+        </ul>
+      </section>
+    </main>
 
     <script type="module" src="config.js"></script>
     <script type="module" src="dashboard.js"></script>
