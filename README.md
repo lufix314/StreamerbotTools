@@ -16,6 +16,11 @@ _If an overlay exists:_
 2. **Add** the `overlay.html` as a Browser Source in OBS (either as local file or with URL)
 3. **Configure** the overlay as needed using `config.js` (for local file) or URL parameters (for remote)
 
+_If a dashboard exists:_
+
+1. **Enable** the WebSocket server of your Streamer.bot
+2. **Open** the `overlay.html` in a Browser of your choice (either as local file or with URL)
+
 ## Available Tools
 
 ### [Play with Viewers Queue](/tools/play_with_viewers/README.md)
@@ -115,6 +120,43 @@ In OBS, open your Browser Source properties and find the **Custom CSS** field. P
 ```
 
 See the individual tool's `README.md` for available CSS variables.
+
+### Step 4: Open Dashboard
+
+Some of the tools come with a dashboard, a simple web page that allows you to change settings and trigger actions.
+
+#### Option A: URL Parameters (Quick, Automatic updates)
+
+1. Open the URL to `lufix314.github.io/StreamerbotTools/<tool>/dashboard.html` in a browser of your choice
+
+You can configure the dashboard using URL search parameters:
+
+```
+lufix314.github.io/StreamerbotTools/<tool>/dashboard.html?port=8090&password=secret
+```
+
+> [!NOTE]
+> `<tool>` is the name of the tool in the `tools/` directory. Play with Viewers for example would be `play_with_viewers`.
+
+The available options are listed in the tool's `README.md`.
+
+> [!WARNING]
+> When you use URL parameters, they are included in the HTTP request to the GitHub server, even though all page processing happens locally in the browser/OBS. This means your WebSocket password (if set) might be visible to third parties (GitHub).
+
+#### Option B: Local File (Recommended)
+
+1. Open the `dashboard.html` from the extracted tool folder in a browser of your choice
+
+You can configure the Dashboard using the separate `config.js` in the tool folder. Simply uncomment the settings you want to change, save the file and refresh the page:
+
+```javascript
+window.overlayConfig = {
+  // host: "127.0.0.1",
+  port: 8090,
+  // endpoint: "/",
+  password: "your-password",
+};
+```
 
 ## Using Multiple Tools
 
