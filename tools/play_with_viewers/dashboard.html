@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Queue Dashboard</title>
+    <style>
+      :root {
+        --bg-color: #ffffff;
+        --text-color: #1a1a1a;
+        --card-bg: #f5f5f5;
+        --border-color: #e0e0e0;
+        --accent-color: #9147ff;
+        --accent-hover: #7c38e0;
+        --danger-color: #e04040;
+        --success-color: #40c040;
+        --drag-bg: #e8e0ff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #1a1a1a;
+          --text-color: #f0f0f0;
+          --card-bg: #2a2a2a;
+          --border-color: #404040;
+          --accent-color: #a863ff;
+          --accent-hover: #b873ff;
+          --danger-color: #ff6060;
+          --success-color: #60ff60;
+          --drag-bg: #3a3050;
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Roboto, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      h1 {
+        font-size: 24pt;
+        margin-bottom: 20px;
+        color: var(--text-color);
+      }
+
+      h2 {
+        font-size: 18pt;
+        margin-bottom: 12px;
+        color: var(--text-color);
+      }
+
+      .hint {
+        font-size: 12pt;
+        font-weight: 200;
+        color: var(--text-color);
+        opacity: 0.8;
+        vertical-align: center;
+      }
+
+      section {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+      }
+
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      label {
+        font-size: 14px;
+        color: var(--text-color);
+      }
+
+      input[type="number"],
+      input[type="text"] {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-size: 14px;
+        min-width: 80px;
+      }
+
+      input:focus {
+        outline: 2px solid var(--accent-color);
+        border-color: transparent;
+      }
+
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        background: var(--accent-color);
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: var(--accent-hover);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .quick-actions {
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .action-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .queue-list {
+        list-style: none;
+        min-height: 100px;
+      }
+
+      .queue-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin-bottom: 8px;
+        cursor: grab;
+        transition:
+          transform 0.2s,
+          background 0.2s;
+      }
+
+      .queue-item:hover {
+        border-color: var(--accent-color);
+      }
+
+      .queue-item.dragging {
+        opacity: 0.5;
+        transform: scale(1.01);
+      }
+
+      .queue-item.drag-over {
+        border-color: var(--accent-color);
+        border-style: dashed;
+      }
+
+      .queue-item-info {
+        display: flex;
+        align-items: center;
+      }
+
+      .queue-item-index {
+        font-weight: bold;
+        color: var(--accent-color);
+        min-width: 24px;
+      }
+
+      .queue-item-name {
+        font-weight: 500;
+      }
+
+      .live-badge {
+        padding: 2px 8px;
+        background: var(--accent-color);
+        color: white;
+        border-radius: 12px;
+        font-size: 10pt;
+      }
+
+      .empty-queue {
+        text-align: center;
+        color: var(--text-color);
+        opacity: 0.6;
+        padding: 40px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Queue Dashboard</h1>
+
+    <section>
+      <h2>Settings</h2>
+      <div class="input-group">
+        <label for="viewer-live">Viewers Live:</label>
+        <input type="number" id="viewer-live" min="0" max="100" value="1" />
+        <button id="save-live-btn">Save</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Quick Actions</h2>
+      <div class="quick-actions">
+        <div class="action-row">
+          <input type="number" id="rotate-count" min="1" max="100" value="1" />
+          <button id="rotate-btn">Rotate</button>
+        </div>
+        <div class="action-row">
+          <input type="number" id="next-count" min="1" max="100" value="1" />
+          <button id="next-btn">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Queue <span class="hint">(drag to reorder)</span></h2>
+      <ul id="queue-list" class="queue-list">
+        <li class="empty-queue">No viewers in queue</li>
+      </ul>
+    </section>
+
+    <script type="module" src="config.js"></script>
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>

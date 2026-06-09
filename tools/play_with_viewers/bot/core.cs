@@ -125,6 +125,41 @@ public class CPHInline
         return true;
     }
 
+    public bool SetLive()
+    {
+        int live = GetNumArg(-1);
+
+        if (live < 0)
+        {
+            SendMessage($"Currently live players: {GetNumLive()}");
+        } else
+        {
+            SetNumLive(live);
+
+            var queue = GetQueue();
+            queue = FixQueue(queue);
+            SaveQueue(queue);
+
+            SendMessage($"Set live players to {GetNumLive()}");
+        }
+
+        return true;
+    }
+
+    public bool SetQueue()
+    {
+        if (!CPH.TryGetArg("input0", out string queueJson) || string.IsNullOrWhiteSpace(queueJson))
+        {
+            return false;
+        }
+
+        var queue = JsonConvert.DeserializeObject<List<Player>>(queueJson);
+        queue = FixQueue(queue);
+        SaveQueue(queue);
+
+        return true;
+    }
+
     private string ListQueue(List<Player> queue, int limit)
     {
         if (queue.Count == 0)
@@ -181,10 +216,15 @@ public class CPHInline
 
     private int GetNumArg()
     {
+        return GetNumArg(1);
+    }
+
+    private int GetNumArg(int def)
+    {
         string num_arg;
         if (!CPH.TryGetArg("input0", out num_arg) || string.IsNullOrWhiteSpace(num_arg))
         {
-            return 1;
+            return def;
         }
         else
         {
@@ -194,7 +234,7 @@ public class CPHInline
             }
             catch
             {
-                return 1;
+                return def;
             }
         }
     }
@@ -228,6 +268,11 @@ public class CPHInline
         return CPH.GetGlobalVar<int>("viewerLive", true);
     }
 
+    private void SetNumLive(int live)
+    {
+        CPH.SetGlobalVar("viewerLive", live, true);
+    }
+
     private void SaveQueue(List<Player> queue)
     {
         string queueJson = JsonConvert.SerializeObject(queue);
@@ -236,7 +281,19 @@ public class CPHInline
 
     private void SendMessage(string msg)
     {
-        CPH.SendMessage(msg, true, true);
+        if (!isSilent())
+        {
+            CPH.SendMessage(msg, true, true);
+        }
+    }
+
+    private bool isSilent()
+    {
+        if (!CPH.TryGetArg<bool>("silent", out bool silent)) {
+            return false;
+        }
+
+        return silent;
     }
 
     public class Player

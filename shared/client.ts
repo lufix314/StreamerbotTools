@@ -31,3 +31,12 @@ export function getClient(callback: (client: StreamerbotClient) => void) {
 
   return client;
 }
+
+export async function doAction(
+  client: StreamerbotClient,
+  name: string,
+  args: Record<string, any> = {},
+  silent: boolean = true,
+) {
+  await client.doAction({ name: name }, { silent: silent, ...args });
+}
