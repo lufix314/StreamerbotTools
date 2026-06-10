@@ -114,7 +114,7 @@ function renderResults() {
 
   if (botUrlContainer) {
     botUrlContainer.innerHTML = `
-    <button><a href="${state.urls.bot}">Open</a></button>
+    <!-- <button><a href="${state.urls.bot}">Open</a></button> -->
     <button><a href="${state.urls.bot}" download>Download</a></button>
     `;
   }
