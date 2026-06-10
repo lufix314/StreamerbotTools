@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Streamer.bot Tools</title>
+    <style>
+      :root {
+        --bg-color: #ffffff;
+        --text-color: #1a1a1a;
+        --card-bg: #f5f5f5;
+        --border-color: #e0e0e0;
+        --accent-color: #9147ff;
+        --accent-hover: #7c38e0;
+        --danger-color: #e04040;
+        --success-color: #40c040;
+        --drag-bg: #e8e0ff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #1a1a1a;
+          --text-color: #f0f0f0;
+          --card-bg: #2a2a2a;
+          --border-color: #404040;
+          --accent-color: #a863ff;
+          --accent-hover: #b873ff;
+          --danger-color: #ff6060;
+          --success-color: #60ff60;
+          --drag-bg: #3a3050;
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Roboto, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      h1,
+      h2 {
+        font-weight: 600;
+      }
+
+      h1 {
+        font-size: 24pt;
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        font-size: 18pt;
+        margin-bottom: 12px;
+      }
+
+      h3 {
+        font-size: 14pt;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      a {
+        color: var(--text-color);
+      }
+
+      main {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      section {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+      }
+
+      label {
+        padding: 8px 4px;
+        font-size: 12pt;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="password"],
+      select {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-size: 14px;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      input:focus,
+      select:focus {
+        outline: 2px solid var(--accent-color);
+        border-color: transparent;
+      }
+
+      .input-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .input-group input,
+      .input-group select {
+        min-width: 100%;
+      }
+
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        background: var(--accent-color);
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      button:hover:not(:disabled) {
+        background: var(--accent-hover);
+      }
+
+      button:focus {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+      }
+
+      #generate-btn {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .url-item {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .url-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .url-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .url-row code {
+        background: var(--bg-color);
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        word-break: break-all;
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .code-block {
+        position: relative;
+      }
+
+      .code-block pre {
+        background: var(--bg-color);
+        padding: 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+        margin-bottom: 8px;
+      }
+
+      .code-block code {
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 13px;
+        display: block;
+      }
+
+      .code-block button {
+        margin-right: 8px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 12px;
+        }
+
+        .input-row {
+          flex-direction: column;
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Streamer.bot Tools</h1>
+
+      <section>
+        <h2>Tool</h2>
+
+        <div class="input-group" id="tool-select-group">
+          <label for="tool-select" class="hidden">Select Tool</label>
+          <select id="tool-select"></select>
+        </div>
+      </section>
+
+      <section>
+        <h2>Connection Settings</h2>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label for="host">Host</label>
+            <input
+              type="text"
+              id="host"
+              value="127.0.0.1"
+              placeholder="127.0.0.1"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="port">Port</label>
+            <input type="number" id="port" value="8080" min="1" max="65535" />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label for="endpoint">Endpoint</label>
+            <input type="text" id="endpoint" value="/" placeholder="/" />
+          </div>
+
+          <div class="input-group">
+            <label for="password">Password (optional)</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Leave empty for no auth"
+            />
+          </div>
+        </div>
+      </section>
+
+      <button id="generate-btn" style="width: 100%; max-width: 300px">
+        Generate URLs & Config
+      </button>
+
+      <section id="results-section" class="hidden" style="margin-top: 20px">
+        <div class="url-item">
+          <h3>Dashboard URL</h3>
+          <div class="url-row">
+            <code id="dashboard-url"></code>
+            <button>Copy</button>
+          </div>
+        </div>
+
+        <div class="url-item">
+          <h3>Overlay URL</h3>
+          <div class="url-row">
+            <code id="overlay-url"></code>
+            <button>Copy</button>
+          </div>
+        </div>
+
+        <div class="url-item">
+          <h3>config.js (for local file usage)</h3>
+          <div class="code-block">
+            <pre><code id="config-content"></code></pre>
+            <div class="action-buttons">
+              <button id="config-copy">Copy</button>
+              <button id="config-download">Download</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
