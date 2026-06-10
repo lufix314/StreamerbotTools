@@ -1,4 +1,4 @@
-import { getClient } from "shared/client.js";
+import { getClient } from "shared/client";
 
 function renderQueue(jsonStr: string): void {
   const container = document.getElementById("queue-container");

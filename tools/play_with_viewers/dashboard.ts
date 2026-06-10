@@ -2,7 +2,7 @@ import type {
   StreamerbotClient,
   StreamerbotEventPayload,
 } from "@streamerbot/client";
-import { getClient, doAction } from "shared/client.js";
+import { getClient, doAction } from "shared/client";
 
 /** Viewer in the queue */
 interface QueueViewer {

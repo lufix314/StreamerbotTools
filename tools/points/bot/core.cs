@@ -168,6 +168,24 @@ public class CPHInline
         return true;
     }
 
+    private string GetArg(string arg)
+    {
+        if (!CPH.TryGetArg(arg, out string value) || string.IsNullOrWhiteSpace(value))
+        {
+            throw new Exception();
+        }
+
+        return value;
+    }
+
+    private string GetUserName(string name)
+    {
+        viewerName = viewerName.TrimStart('@');
+        var userInfo = CPH.TwitchGetUserInfoByLogin(viewerName);
+
+        return userInfo.UserName;
+    }
+
     private string GetViewerName(string arg)
     {
         string viewerName;
@@ -176,10 +194,7 @@ public class CPHInline
             throw new Exception("You must select a user!");
         }
 
-        viewerName = viewerName.TrimStart('@');
-        var userInfo = CPH.TwitchGetUserInfoByLogin(viewerName);
-
-        return userInfo.UserName;
+        return GetUserName(viewerName);
     }
 
     private string GetViewerName()
