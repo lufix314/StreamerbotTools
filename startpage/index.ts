@@ -5,6 +5,7 @@ declare const DISCOVERED_TOOLS: string[];
 interface GeneratedUrls {
   dashboard?: string;
   overlay?: string;
+  bot?: string;
 }
 
 interface State {
@@ -42,9 +43,11 @@ function generateUrls(
 
   const dashboardPath = `/${tool}/dashboard.html`;
   const overlayPath = `/${tool}/overlay.html`;
+  const botPath = `/${tool}/bot.sb`;
 
   urls.dashboard = `${baseUrl}${dashboardPath}${suffix}`;
   urls.overlay = `${baseUrl}${overlayPath}${suffix}`;
+  urls.bot = `${baseUrl}${botPath}`;
 
   return urls;
 }
@@ -104,9 +107,17 @@ function renderResults() {
   state.urls = generateUrls(tool, config, baseUrl);
   state.configJs = generateConfigJs(config);
 
+  const botUrlContainer = document.getElementById("sb-actions-url");
   const dashboardUrlContainer = document.getElementById("dashboard-url");
   const overlayUrlContainer = document.getElementById("overlay-url");
   const configContainer = document.getElementById("config-content");
+
+  if (botUrlContainer) {
+    botUrlContainer.innerHTML = `
+    <button><a href="${state.urls.bot}">Open</a></button>
+    <button><a href="${state.urls.bot}" download>Download</a></button>
+    `;
+  }
 
   if (dashboardUrlContainer) {
     dashboardUrlContainer.innerHTML = `<a href="${state.urls.dashboard}">${state.urls.dashboard || ""}</a>`;

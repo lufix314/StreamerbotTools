@@ -66,6 +66,13 @@
         font-weight: 500;
       }
 
+      .hint {
+        font-size: 12pt;
+        font-weight: 200;
+        opacity: 0.8;
+        vertical-align: center;
+      }
+
       a {
         color: var(--text-color);
       }
@@ -155,26 +162,26 @@
         display: none !important;
       }
 
-      .url-item {
+      .result-item {
         margin-bottom: 16px;
         padding-bottom: 16px;
         border-bottom: 1px solid var(--border-color);
       }
 
-      .url-item:last-child {
+      .result-item:last-child {
         border-bottom: none;
         margin-bottom: 0;
         padding-bottom: 0;
       }
 
-      .url-row {
+      .result-row {
         display: flex;
         gap: 8px;
         align-items: center;
         flex-wrap: wrap;
       }
 
-      .url-row code {
+      .result-row code {
         background: var(--bg-color);
         padding: 8px 12px;
         border-radius: 4px;
@@ -209,8 +216,12 @@
 
       .action-buttons {
         display: flex;
-        gap: 8px;
+        gap: 12px;
         margin-top: 8px;
+      }
+
+      #sb-actions-url button a {
+        text-decoration: none;
       }
 
       .hidden {
@@ -243,7 +254,10 @@
       </section>
 
       <section>
-        <h2>Connection Settings</h2>
+        <h2>
+          Connection Settings
+          <span class="hint">(Streamer.bot WebSocket Server settings)</span>
+        </h2>
 
         <div class="input-row">
           <div class="input-group">
@@ -280,34 +294,55 @@
       </section>
 
       <button id="generate-btn" style="width: 100%; max-width: 300px">
-        Generate URLs & Config
+        Generate Setup
       </button>
 
       <section id="results-section" class="hidden" style="margin-top: 20px">
-        <div class="url-item">
-          <h3>Dashboard URL</h3>
-          <div class="url-row">
+        <div class="result-item">
+          <h3>
+            Streamer.bot Actions/Command
+            <span class="hint">(Import into Streamer.bot)</span>
+          </h3>
+          <div id="sb-actions-url" class="action-buttons"></div>
+        </div>
+
+        <div class="result-item">
+          <h3>
+            Dashboard URL
+            <span class="hint"
+              >(Open in your browser to interact with the tool)</span
+            >
+          </h3>
+          <div class="result-row">
             <code id="dashboard-url"></code>
             <button>Copy</button>
           </div>
         </div>
 
-        <div class="url-item">
-          <h3>Overlay URL</h3>
-          <div class="url-row">
+        <div class="result-item">
+          <h3>
+            Overlay URL
+            <span class="hint">(Add to your OBS as a browser source)</span>
+          </h3>
+          <div class="result-row">
             <code id="overlay-url"></code>
             <button>Copy</button>
           </div>
         </div>
 
-        <div class="url-item">
-          <h3>config.js (for local file usage)</h3>
+        <div class="result-item">
+          <h3>
+            Config
+            <span class="hint"
+              >(Replace your config.js for local file usage)</span
+            >
+          </h3>
           <div class="code-block">
             <pre><code id="config-content"></code></pre>
-            <div class="action-buttons">
-              <button id="config-copy">Copy</button>
-              <button id="config-download">Download</button>
-            </div>
+          </div>
+          <div class="action-buttons">
+            <button id="config-copy">Copy</button>
+            <button id="config-download">Download</button>
           </div>
         </div>
       </section>
