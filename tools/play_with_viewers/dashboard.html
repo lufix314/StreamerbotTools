@@ -58,12 +58,18 @@
       h2 {
         font-size: 18pt;
         margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
       }
 
       .hint {
         font-size: 12pt;
         font-weight: 200;
         opacity: 0.8;
+        vertical-align: center;
       }
 
       section {
@@ -124,6 +130,61 @@
       button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 28px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border-color);
+        transition: 0.3s;
+        border-radius: 4px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 4px;
+      }
+
+      input:checked + .toggle-slider {
+        background-color: var(--accent-color);
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+      }
+
+      input:disabled + .toggle-slider {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .small-btn {
+        font-size: 12px;
+        padding: 4px 12px;
       }
 
       .quick-actions {
@@ -226,7 +287,21 @@
       <h1>Queue Dashboard</h1>
 
       <section aria-labelledby="settings-heading">
-        <h2 id="settings-heading">Settings</h2>
+        <h2 id="settings-heading">
+          Settings
+
+          <label class="input-group">
+            <label for="queue-open-toggle" class="hidden">Queue State:</label>
+            <div class="toggle-switch">
+              <input
+                type="checkbox"
+                id="queue-open-toggle"
+                aria-label="Queue State"
+              />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </h2>
         <div class="input-group">
           <label for="viewer-live">Viewers Live:</label>
           <input
@@ -276,7 +351,8 @@
 
       <section aria-labelledby="queue-heading">
         <h2 id="queue-heading">
-          Queue <span class="hint">(drag to reorder)</span>
+          <span>Queue <span class="hint">(drag to reorder)</span></span>
+          <button id="clear-queue-btn" class="small-btn">Clear</button>
         </h2>
         <ul id="queue-list" class="queue-list" role="list">
           <li class="empty-queue">No viewers in queue</li>

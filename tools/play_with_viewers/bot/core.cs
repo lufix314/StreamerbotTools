@@ -5,12 +5,22 @@ using Newtonsoft.Json;
 
 public class CPHInline
 {
+    private const string QUEUE_VAR_NAME = "viewerQueue";
+    private const string VIEWER_LIVE_VAR_NAME = "viewerLive";
+    private const string STATE_VAR_NAME = "viewerQueueOpen";
+
     public void Init()
     {
     }
 
     public bool AddPlayerToQueue()
     {
+        if (!isOpen())
+        {
+            SendMessage("The queue is closed.");
+            return true;
+        }
+
         try
         {
             var name = GetViewerName();
@@ -45,6 +55,12 @@ public class CPHInline
 
     public bool RemovePlayerFromQueue()
     {
+        if (!isOpen())
+        {
+            SendMessage("The queue is closed.");
+            return true;
+        }
+
         try
         {
             var name = GetViewerName();
@@ -160,6 +176,20 @@ public class CPHInline
         return true;
     }
 
+    public bool OpenQueue()
+    {
+        SetQueueState(true);
+        SendMessage("Queue opened!");
+        return true;
+    }
+
+    public bool CloseQueue()
+    {
+        SetQueueState(false);
+        SendMessage("Queue closed!");
+        return true;
+    }
+
     private string ListQueue(List<Player> queue, int limit)
     {
         if (queue.Count == 0)
@@ -203,6 +233,14 @@ public class CPHInline
         return message;
     }
 
+    private string GetTwitchUserName(string name)
+    {
+        name = name.TrimStart('@');
+        var userInfo = CPH.TwitchGetUserInfoByLogin(name);
+
+        return userInfo.UserName;
+    }
+
     private string GetViewerName()
     {
         string viewerName;
@@ -211,7 +249,7 @@ public class CPHInline
             throw new Exception("You must select a user to add them to the queue!");
         }
 
-        return viewerName;
+        return GetTwitchUserName(viewerName);
     }
 
     private int GetNumArg()
@@ -252,7 +290,7 @@ public class CPHInline
 
     private List<Player> GetQueue()
     {
-        string queueJson = CPH.GetGlobalVar<string>("viewerQueue", true);
+        string queueJson = CPH.GetGlobalVar<string>(QUEUE_VAR_NAME, true);
         if (!string.IsNullOrEmpty(queueJson))
         {
             return JsonConvert.DeserializeObject<List<Player>>(queueJson);
@@ -263,21 +301,32 @@ public class CPHInline
         }
     }
 
+    private void SaveQueue(List<Player> queue)
+    {
+        string queueJson = JsonConvert.SerializeObject(queue);
+        CPH.SetGlobalVar(QUEUE_VAR_NAME, queueJson, true);
+    }
+
     private int GetNumLive()
     {
-        return CPH.GetGlobalVar<int>("viewerLive", true);
+        return CPH.GetGlobalVar<int>(VIEWER_LIVE_VAR_NAME, true);
     }
 
     private void SetNumLive(int live)
     {
-        CPH.SetGlobalVar("viewerLive", live, true);
+        CPH.SetGlobalVar(VIEWER_LIVE_VAR_NAME, live, true);
     }
 
-    private void SaveQueue(List<Player> queue)
+    private void SetQueueState(bool state)
     {
-        string queueJson = JsonConvert.SerializeObject(queue);
-        CPH.SetGlobalVar("viewerQueue", queueJson, true);
+        CPH.SetGlobalVar(STATE_VAR_NAME, state, true);
     }
+
+    private bool isOpen()
+    {
+        return CPH.GetGlobalVar<bool>(STATE_VAR_NAME, true);
+    }
+
 
     private void SendMessage(string msg)
     {
