@@ -6,28 +6,30 @@
     <title>Queue</title>
     <style>
       :root {
-        --queue-font: "Segoe UI", Roboto, sans-serif;
-        --queue-color: #ffffff;
-        --queue-padding: 20px;
-        --queue-max-width: 400px;
+        --font: "Segoe UI", Roboto, sans-serif;
+        --text-color: #ffffff;
+        --background-color: #00000080;
+
+        --queue-padding: 8px;
+        --queue-min-width: 120px;
+        --border-radius: 4px;
 
         --header-font-size: 24px;
         --header-font-weight: 700;
-        --header-margin-bottom: 12px;
-        --header-padding-bottom: 8px;
-        --header-border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-        --header-text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+
+        --separator-space-above: 8px;
+        --separator-space-below: 8px;
+        --separator: 2px solid rgba(255, 255, 255, 0.2);
 
         --viewer-font-size: 20px;
         --viewer-padding: 6px 0;
-        --viewer-text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 
         --slide-duration: 0.3s;
         --slide-stagger: 0.05s;
 
         --live-dot-color: #9147ff;
         --live-dot-size: 10px;
-        --live-dot-margin-right: 8px;
+        --live-dot-padding: 8px;
       }
 
       * {
@@ -38,28 +40,29 @@
 
       body {
         background: transparent;
-        font-family: var(--queue-font);
-        color: var(--queue-color);
-        padding: var(--queue-padding);
+        font-family: var(--font);
+        color: var(--text-color);
+        display: flex
       }
 
       #queue-container {
-        max-width: var(--queue-max-width);
+        min-width: var(--queue-min-width);
+        padding: var(--queue-padding);
+        background: var(--background-color);
+        border-radius: var(--border-radius);
       }
 
       #queue-header {
         font-size: var(--header-font-size);
         font-weight: var(--header-font-weight);
-        text-shadow: var(--header-text-shadow);
-        margin-bottom: var(--header-margin-bottom);
-        padding-bottom: var(--header-padding-bottom);
-        border-bottom: var(--header-border-bottom);
+        margin-bottom: var(--separator-space-below);
+        padding-bottom: var(--separator-space-below);
+        border-bottom: var(--separator);
       }
 
       .viewer-entry {
         font-size: var(--viewer-font-size);
         padding: var(--viewer-padding);
-        text-shadow: var(--viewer-text-shadow);
         opacity: 0;
         transform: translateX(-10px);
         animation: slideIn var(--slide-duration) ease forwards;
@@ -72,7 +75,7 @@
         height: var(--live-dot-size);
         border-radius: 50%;
         background: var(--live-dot-color);
-        margin-right: var(--live-dot-margin-right);
+        margin-right: var(--live-dot-padding);
         flex-shrink: 0;
       }
 

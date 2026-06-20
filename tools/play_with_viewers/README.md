@@ -51,16 +51,22 @@ The overlay exposes a set of CSS custom properties (variables). Paste the follow
   /* ---- General ---- */
 
   /* Font family used throughout the overlay. */
-  --queue-font: "Segoe UI", Roboto, sans-serif;
+  --font: "Segoe UI", Roboto, sans-serif;
 
   /* Base text color. */
-  --queue-color: #ffffff;
+  --text-color: #ffffff;
+
+  /* Background color of the queue container. */
+  --background-color: #00000080;
 
   /* Padding around the entire overlay body. */
-  --queue-padding: 20px;
+  --queue-padding: 8px;
 
-  /* Maximum width of the queue container. */
-  --queue-max-width: 400px;
+  /* Minimum width of the queue container. */
+  --queue-min-width: 120px;
+
+  /* Border radius of the queue container. */
+  --border-radius: 4px;
 
   /* ---- Queue Header ---- */
 
@@ -70,17 +76,14 @@ The overlay exposes a set of CSS custom properties (variables). Paste the follow
   /* Font weight of the header (e.g. 400, 700, bold). */
   --header-font-weight: 700;
 
-  /* Spacing below the header before the viewer list starts. */
-  --header-margin-bottom: 12px;
+  /* Space above the separator line beneath the header. */
+  --separator-space-above: 8px;
 
-  /* Padding between the header text and its bottom border. */
-  --header-padding-bottom: 8px;
+  /* Space below the separator line before the viewer list starts. */
+  --separator-space-below: 8px;
 
   /* Style of the separating line beneath the header. */
-  --header-border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-
-  /* Text shadow on the header for readability over gameplay. */
-  --header-text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  --separator: 2px solid rgba(255, 255, 255, 0.2);
 
   /* ---- Viewer Entries ---- */
 
@@ -90,8 +93,11 @@ The overlay exposes a set of CSS custom properties (variables). Paste the follow
   /* Vertical and horizontal padding around each viewer entry. */
   --viewer-padding: 6px 0;
 
-  /* Text shadow on viewer names. */
-  --viewer-text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  /* Duration of the slide-in animation for each viewer entry. */
+  --slide-duration: 0.3s;
+
+  /* Stagger delay between each viewer entry animating in. */
+  --slide-stagger: 0.05s;
 
   /* ---- Live Indicator Dot ---- */
 
@@ -102,16 +108,7 @@ The overlay exposes a set of CSS custom properties (variables). Paste the follow
   --live-dot-size: 10px;
 
   /* Space between the live dot and the viewer name. */
-  --live-dot-margin-right: 8px;
-
-  /* ---- Animations ---- */
-
-  /* Duration of the slide-in animation for each viewer entry. */
-  --slide-duration: 0.3s;
-
-  /* Stagger delay between each viewer entry animating in.
-     Increase for a more pronounced cascade effect. */
-  --slide-stagger: 0.05s;
+  --live-dot-padding: 8px;
 }
 ```
 

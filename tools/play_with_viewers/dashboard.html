@@ -177,6 +177,11 @@
         transform: translateX(22px);
       }
 
+      input:focus + .toggle-slider {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+      }
+
       input:disabled + .toggle-slider {
         opacity: 0.5;
         cursor: not-allowed;
