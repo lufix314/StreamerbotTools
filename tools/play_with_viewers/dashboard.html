@@ -85,6 +85,7 @@
         align-items: center;
         gap: 12px;
         flex-wrap: wrap;
+        margin: 8px 0;
       }
 
       label {
@@ -103,6 +104,23 @@
       }
 
       input:focus {
+        outline: 2px solid var(--accent-color);
+        border-color: transparent;
+      }
+
+      textarea {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        width: 100%;
+      }
+
+      textarea:focus {
         outline: 2px solid var(--accent-color);
         border-color: transparent;
       }
@@ -130,6 +148,11 @@
       button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+
+      .button-box {
+        display: flex;
+        justify-content: flex-end;
       }
 
       .toggle-switch {
@@ -294,33 +317,29 @@
       <section aria-labelledby="settings-heading">
         <h2 id="settings-heading">
           Settings
-
-          <label class="input-group">
-            <label for="queue-open-toggle" class="hidden">Queue State:</label>
-            <div class="toggle-switch">
-              <input
-                type="checkbox"
-                id="queue-open-toggle"
-                aria-label="Queue State"
-              />
+          <div class="input-group">
+            <label for="queue-open-toggle" class="hidden">Queue Open:</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="queue-open-toggle" />
               <span class="toggle-slider"></span>
-            </div>
-          </label>
+            </label>
+          </div>
         </h2>
         <div class="input-group">
           <label for="viewer-live">Viewers Live:</label>
-          <input
-            type="number"
-            id="viewer-live"
-            min="0"
-            max="100"
-            value="1"
-            aria-describedby="viewer-live-hint"
-          />
-          <span id="viewer-live-hint" class="hidden"
-            >Enter number of live viewers</span
-          >
-          <button id="save-live-btn">Save</button>
+          <input type="number" id="viewer-live" min="0" max="100" value="1" />
+        </div>
+        <div class="input-group">
+          <label for="queue-msg">Queue Message:</label>
+          <textarea
+            id="queue-msg"
+            rows="3"
+            placeholder="The queue is open. Join with !join"
+            style="margin-top: 4px"
+          ></textarea>
+        </div>
+        <div class="button-box">
+          <button id="save-settings-btn">Save</button>
         </div>
       </section>
 

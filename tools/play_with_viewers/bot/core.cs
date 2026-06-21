@@ -1,21 +1,43 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 
 public class CPHInline
 {
+    private enum LimitType
+    {
+        All = -1,  // Show entire queue
+        Live = -2  // Show only live players
+    }
+
     private const string QUEUE_VAR_NAME = "viewerQueue";
     private const string VIEWER_LIVE_VAR_NAME = "viewerLive";
     private const string STATE_VAR_NAME = "viewerQueueOpen";
+    private const string MSG_VAR_NAME = "viewerQueueMsg";
 
-    public void Init()
+    private bool isOpen
     {
+        get { return CPH.GetGlobalVar<bool>(STATE_VAR_NAME, true); }
+        set { CPH.SetGlobalVar(STATE_VAR_NAME, value, true); }
+    }
+
+    private int numLive
+    {
+        get { return CPH.GetGlobalVar<int>(VIEWER_LIVE_VAR_NAME, true); }
+        set { CPH.SetGlobalVar(VIEWER_LIVE_VAR_NAME, value, true); }
+    }
+
+    private string queueMessage
+    {
+        get { return CPH.GetGlobalVar<string>(MSG_VAR_NAME, true); }
+        set { CPH.SetGlobalVar(MSG_VAR_NAME, value, true); }
     }
 
     public bool AddPlayerToQueue()
     {
-        if (!isOpen())
+        if (!isOpen)
         {
             SendMessage("The queue is closed.");
             return true;
@@ -25,7 +47,6 @@ public class CPHInline
         {
             var name = GetViewerName();
             var queue = GetQueue();
-            var n_live = GetNumLive();
             var player = queue.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
             if (player == null)
             {
@@ -46,7 +67,6 @@ public class CPHInline
         }
         catch (Exception err)
         {
-            SendMessage("Failed");
             SendMessage(err.Message);
         }
 
@@ -55,7 +75,7 @@ public class CPHInline
 
     public bool RemovePlayerFromQueue()
     {
-        if (!isOpen())
+        if (!isOpen)
         {
             SendMessage("The queue is closed.");
             return true;
@@ -65,7 +85,6 @@ public class CPHInline
         {
             var name = GetViewerName();
             var queue = GetQueue();
-            var n_live = GetNumLive();
             var player = queue.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
             if (player != null)
             {
@@ -114,14 +133,14 @@ public class CPHInline
     public bool ShowQueue()
     {
         string limit_arg;
-        int limit = -1;
+        int limit = (int)LimitType.All;
         if (!CPH.TryGetArg("input0", out limit_arg) || string.IsNullOrWhiteSpace(limit_arg))
         {
-            limit = -1;
+            limit = (int)LimitType.All;
         }
         else if (limit_arg == "live")
         {
-            limit = -2;
+            limit = (int)LimitType.Live;
         }
         else
         {
@@ -131,12 +150,12 @@ public class CPHInline
             }
             catch
             {
-                limit = -1;
+                limit = (int)LimitType.All;
             }
         }
 
         var queue = GetQueue();
-        string message = limit == -2 ? ListLive(queue) : ListQueue(queue, limit);
+        string message = limit == (int)LimitType.Live ? ListLive(queue) : ListQueue(queue, limit);
         SendMessage(message);
         return true;
     }
@@ -147,21 +166,22 @@ public class CPHInline
 
         if (live < 0)
         {
-            SendMessage($"Currently live players: {GetNumLive()}");
+            SendMessage($"Currently live players: {numLive}");
         } else
         {
-            SetNumLive(live);
+            numLive = live;
 
             var queue = GetQueue();
             queue = FixQueue(queue);
             SaveQueue(queue);
 
-            SendMessage($"Set live players to {GetNumLive()}");
+            SendMessage($"Set live players to {numLive}");
         }
 
         return true;
     }
 
+    // Set queue from JSON argument
     public bool SetQueue()
     {
         if (!CPH.TryGetArg("input0", out string queueJson) || string.IsNullOrWhiteSpace(queueJson))
@@ -178,18 +198,36 @@ public class CPHInline
 
     public bool OpenQueue()
     {
-        SetQueueState(true);
-        SendMessage("Queue opened!");
+        isOpen = true;
+
+        var queueMessage = this.queueMessage;
+        if (string.IsNullOrWhiteSpace(queueMessage)) {
+            SendMessage("Queue opened!");
+        } else {
+            SendMessage(queueMessage);
+        }
         return true;
     }
 
     public bool CloseQueue()
     {
-        SetQueueState(false);
+        isOpen = false;
         SendMessage("Queue closed!");
         return true;
     }
 
+    public bool SetQueueMessage()
+    {
+        if (!CPH.TryGetArg("input0", out string queueMessage) || string.IsNullOrWhiteSpace(queueMessage))
+        {
+            return false;
+        }
+
+        this.queueMessage = queueMessage;
+        return true;
+    }
+
+    // List queue up to limit (or all if limit <= 0)
     private string ListQueue(List<Player> queue, int limit)
     {
         if (queue.Count == 0)
@@ -197,24 +235,30 @@ public class CPHInline
             return "The queue is empty.";
         }
 
-        var message = "";
+        var sb = new StringBuilder();
         var max = limit <= 0 ? queue.Count : Math.Min(limit, queue.Count);
         for (int i = 0; i < max; i++)
         {
             var p = queue[i];
-            message += $" {i + 1}. @{p.name}";
+            sb.Append($" {i + 1}. @{p.name}");
             if (p.live)
             {
-                message += " [LIVE]";
+                sb.Append(" [LIVE]");
             }
         }
 
-        return message;
+        return sb.ToString();
     }
 
+    // List only live players (stops at first non-live)
     private string ListLive(List<Player> queue)
     {
-        var message = "";
+        if (queue.Count == 0)
+        {
+            return "The queue is empty.";
+        }
+
+        var sb = new StringBuilder();
         for (int i = 0; i < queue.Count; i++)
         {
             var p = queue[i];
@@ -223,14 +267,10 @@ public class CPHInline
                 break;
             }
 
-            message += $" {i + 1}. @{p.name}";
-            if (p.live)
-            {
-                message += " [LIVE]";
-            }
+            sb.Append($" {i + 1}. @{p.name} [LIVE]");
         }
 
-        return message;
+        return sb.ToString();
     }
 
     private string GetTwitchUserName(string name)
@@ -241,6 +281,7 @@ public class CPHInline
         return userInfo.UserName;
     }
 
+    // Get viewer name from argument, throws if missing
     private string GetViewerName()
     {
         string viewerName;
@@ -252,11 +293,9 @@ public class CPHInline
         return GetTwitchUserName(viewerName);
     }
 
-    private int GetNumArg()
-    {
-        return GetNumArg(1);
-    }
+    private int GetNumArg() => GetNumArg(1);
 
+    // Get numeric argument, return default if missing or invalid
     private int GetNumArg(int def)
     {
         string num_arg;
@@ -277,56 +316,31 @@ public class CPHInline
         }
     }
 
+    // Update live status based on numLive count
     private List<Player> FixQueue(List<Player> queue)
     {
-        var n_live = GetNumLive();
         for (var i = 0; i < queue.Count; i++)
         {
-            queue[i].live = i < n_live;
+            queue[i].live = i < numLive;
         }
 
         return queue;
     }
 
+    // Get queue from global variable (returns empty list if null)
     private List<Player> GetQueue()
     {
         string queueJson = CPH.GetGlobalVar<string>(QUEUE_VAR_NAME, true);
-        if (!string.IsNullOrEmpty(queueJson))
-        {
-            return JsonConvert.DeserializeObject<List<Player>>(queueJson);
-        }
-        else
-        {
-            return new List<Player>();
-        }
+        return JsonConvert.DeserializeObject<List<Player>>(queueJson)
+               ?? new List<Player>();
     }
 
+    // Save queue to global variable
     private void SaveQueue(List<Player> queue)
     {
         string queueJson = JsonConvert.SerializeObject(queue);
         CPH.SetGlobalVar(QUEUE_VAR_NAME, queueJson, true);
     }
-
-    private int GetNumLive()
-    {
-        return CPH.GetGlobalVar<int>(VIEWER_LIVE_VAR_NAME, true);
-    }
-
-    private void SetNumLive(int live)
-    {
-        CPH.SetGlobalVar(VIEWER_LIVE_VAR_NAME, live, true);
-    }
-
-    private void SetQueueState(bool state)
-    {
-        CPH.SetGlobalVar(STATE_VAR_NAME, state, true);
-    }
-
-    private bool isOpen()
-    {
-        return CPH.GetGlobalVar<bool>(STATE_VAR_NAME, true);
-    }
-
 
     private void SendMessage(string msg)
     {
@@ -336,6 +350,7 @@ public class CPHInline
         }
     }
 
+    // Check if silent flag is set (skip chat messages)
     private bool isSilent()
     {
         if (!CPH.TryGetArg<bool>("silent", out bool silent)) {

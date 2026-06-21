@@ -17,6 +17,8 @@
         --header-font-size: 24px;
         --header-font-weight: 700;
 
+        --header-hint: "!join";
+
         --separator-space-above: 8px;
         --separator-space-below: 8px;
         --separator: 2px solid rgba(255, 255, 255, 0.2);
@@ -58,6 +60,14 @@
         margin-bottom: var(--separator-space-below);
         padding-bottom: var(--separator-space-below);
         border-bottom: var(--separator);
+      }
+
+      #queue-header::after {
+        content: var(--header-hint);
+        font-size: 12pt;
+        font-weight: 200;
+        vertical-align: center;
+        padding: 0 8px;
       }
 
       .viewer-entry {

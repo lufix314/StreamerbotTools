@@ -30,6 +30,7 @@ const ACTION_NAMES = {
   OPEN_QUEUE: "Open Queue",
   CLOSE_QUEUE: "Close Queue",
   CLEAR_QUEUE: "Clear Queue",
+  SET_QUEUE_MESSAGE: "Set Queue Message",
 } as const;
 
 /** names of streamerbot variables */
@@ -37,19 +38,21 @@ const VARIABLE_NAMES = {
   QUEUE: "viewerQueue",
   VIEWER_LIVE: "viewerLive",
   STATE: "viewerQueueOpen",
+  QUEUE_MSG: "viewerQueueMsg",
 } as const;
 
 /** IDs of different HTML elements used in the dashboard */
 const ELEMENT_IDS = {
   QUEUE_LIST: "queue-list",
   VIEWER_LIVE: "viewer-live",
-  SAVE_LIVE_BTN: "save-live-btn",
+  SAVE_SETTINGS_BTN: "save-settings-btn",
   ROTATE_BTN: "rotate-btn",
   ROTATE_COUNT: "rotate-count",
   NEXT_BTN: "next-btn",
   NEXT_COUNT: "next-count",
   QUEUE_OPEN_TOGGLE: "queue-open-toggle",
   CLEAR_QUEUE_BTN: "clear-queue-btn",
+  QUEUE_MSG: "queue-msg",
 } as const;
 
 /** Create an item in the queue list */
@@ -210,14 +213,37 @@ function setQueueOpen(value: boolean) {
 
 /** Setup event listeners like button presses and trigger the corresponding action*/
 function setupEventListeners() {
-  // Set the number of live viewers
-  const saveLiveBtn = document.getElementById(ELEMENT_IDS.SAVE_LIVE_BTN);
-  if (saveLiveBtn) {
-    saveLiveBtn.addEventListener("click", () => {
-      const input = document.getElementById(
+  // Save all settings
+  const saveSettingsBtn = document.getElementById(
+    ELEMENT_IDS.SAVE_SETTINGS_BTN,
+  );
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener("click", () => {
+      const liveInput = document.getElementById(
         ELEMENT_IDS.VIEWER_LIVE,
       ) as HTMLInputElement;
-      doAction(client, ACTION_NAMES.SET_LIVE, { input0: input.value });
+      doAction(client, ACTION_NAMES.SET_LIVE, { input0: liveInput.value });
+
+      const msgInput = document.getElementById(
+        ELEMENT_IDS.QUEUE_MSG,
+      ) as HTMLTextAreaElement;
+      doAction(client, ACTION_NAMES.SET_QUEUE_MESSAGE, {
+        input0: msgInput.value,
+      });
+    });
+  }
+
+  // Toggle queue open/close (instant)
+  const queueOpenToggle = document.getElementById(
+    ELEMENT_IDS.QUEUE_OPEN_TOGGLE,
+  ) as HTMLInputElement;
+  if (queueOpenToggle) {
+    queueOpenToggle.addEventListener("change", () => {
+      if (queueOpenToggle.checked) {
+        doAction(client, ACTION_NAMES.OPEN_QUEUE, {});
+      } else {
+        doAction(client, ACTION_NAMES.CLOSE_QUEUE, {});
+      }
     });
   }
 
@@ -243,20 +269,6 @@ function setupEventListeners() {
     });
   }
 
-  // Toggle queue open/close
-  const queueOpenToggle = document.getElementById(
-    ELEMENT_IDS.QUEUE_OPEN_TOGGLE,
-  ) as HTMLInputElement;
-  if (queueOpenToggle) {
-    queueOpenToggle.addEventListener("change", () => {
-      if (queueOpenToggle.checked) {
-        doAction(client, ACTION_NAMES.OPEN_QUEUE, {});
-      } else {
-        doAction(client, ACTION_NAMES.CLOSE_QUEUE, {});
-      }
-    });
-  }
-
   // Clear queue
   const clearQueueBtn = document.getElementById(ELEMENT_IDS.CLEAR_QUEUE_BTN);
   if (clearQueueBtn) {
@@ -270,7 +282,7 @@ async function fetchViewerLive(client: StreamerbotClient) {
   try {
     const resp = await client.getGlobal(VARIABLE_NAMES.VIEWER_LIVE);
     if (resp?.status === "ok" && resp.variable) {
-      setViewerLive(resp.variable.value?.valueOf() as number || 0);
+      setViewerLive((resp.variable.value?.valueOf() as number) || 0);
     }
   } catch (err) {
     setViewerLive(0);
@@ -281,10 +293,30 @@ async function fetchQueueOpen(client: StreamerbotClient) {
   try {
     const resp = await client.getGlobal(VARIABLE_NAMES.STATE);
     if (resp?.status === "ok" && resp.variable) {
-      setQueueOpen(resp.variable.value?.valueOf() as boolean || false);
+      setQueueOpen((resp.variable.value?.valueOf() as boolean) || false);
     }
   } catch (err) {
     setQueueOpen(false);
+  }
+}
+
+async function fetchQueueMsg(client: StreamerbotClient) {
+  try {
+    const resp = await client.getGlobal(VARIABLE_NAMES.QUEUE_MSG);
+    if (resp?.status === "ok" && resp.variable) {
+      setQueueMsg(resp.variable.value?.toString() || "");
+    }
+  } catch (err) {
+    console.error(`getGlobal ${VARIABLE_NAMES.QUEUE_MSG} error:`, err);
+  }
+}
+
+function setQueueMsg(value: string) {
+  const input = document.getElementById(
+    ELEMENT_IDS.QUEUE_MSG,
+  ) as HTMLTextAreaElement;
+  if (input) {
+    input.value = value;
   }
 }
 
@@ -332,6 +364,8 @@ function handleGlobalVariableUpdated(
     setViewerLive(newValue);
   } else if (name === VARIABLE_NAMES.STATE) {
     setQueueOpen(newValue);
+  } else if (name === VARIABLE_NAMES.QUEUE_MSG) {
+    setQueueMsg(newValue);
   }
 }
 
@@ -339,6 +373,7 @@ const client = getClient((c) => {
   fetchQueue(c);
   fetchViewerLive(c);
   fetchQueueOpen(c);
+  fetchQueueMsg(c);
 });
 
 client.on("Misc.GlobalVariableUpdated", handleGlobalVariableUpdated);
