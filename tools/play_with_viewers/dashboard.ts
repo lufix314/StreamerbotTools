@@ -31,6 +31,7 @@ const ACTION_NAMES = {
   CLOSE_QUEUE: "Close Queue",
   CLEAR_QUEUE: "Clear Queue",
   SET_QUEUE_MESSAGE: "Set Queue Message",
+  KICK_FROM_QUEUE: "Kick from Queue"
 } as const;
 
 /** names of streamerbot variables */
@@ -58,9 +59,12 @@ const ELEMENT_IDS = {
 /** Create an item in the queue list */
 function createQueueItem(viewer: QueueViewer, index: number): HTMLElement {
   const li = document.createElement("li");
-  li.className = "queue-item";
-  li.draggable = true;
-  li.dataset.index = index.toString();
+  li.className = "queue-container";
+
+  const itemDiv = document.createElement("div");
+  itemDiv.className = "queue-item";
+  itemDiv.draggable = true;
+  itemDiv.dataset.index = index.toString();
 
   const infoDiv = document.createElement("div");
   infoDiv.className = "queue-item-info";
@@ -75,14 +79,27 @@ function createQueueItem(viewer: QueueViewer, index: number): HTMLElement {
 
   infoDiv.appendChild(indexSpan);
   infoDiv.appendChild(nameSpan);
-  li.appendChild(infoDiv);
+
+  itemDiv.appendChild(infoDiv)
+
+  // const actionsDiv = document.createElement("div");
+  // actionsDiv.className = "queue-item-actions";
 
   if (viewer.live) {
     const badge = document.createElement("span");
     badge.className = "live-badge";
     badge.textContent = "LIVE";
-    li.appendChild(badge);
+    itemDiv.appendChild(badge);
   }
+
+  li.appendChild(itemDiv);
+
+  const kickBtn = document.createElement("button");
+  kickBtn.className = "kick-btn";
+  kickBtn.setAttribute("aria-label", "Remove from queue");
+  kickBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  kickBtn.addEventListener("click", () => kickFromQueue(viewer.name, index));
+  li.appendChild(kickBtn);
 
   return li;
 }
@@ -192,6 +209,18 @@ async function saveQueue() {
     });
   } catch (err) {
     console.error("Failed to save queue:", err);
+  }
+}
+
+async function kickFromQueue(viewerName: string, index: number) {
+  try {
+    await doAction(client, ACTION_NAMES.KICK_FROM_QUEUE, {
+      input0: viewerName,
+    });
+    state.queue.splice(index, 1);
+    saveQueue();
+  } catch (err) {
+    console.error("Failed to kick viewer:", err);
   }
 }
 

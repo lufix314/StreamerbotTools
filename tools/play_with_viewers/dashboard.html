@@ -228,12 +228,18 @@
 
       .queue-list {
         list-style: none;
-        min-height: 100px;
+      }
+
+      .queue-container {
+        display: flex;
+        align-items: baseline;
       }
 
       .queue-item {
         display: flex;
+        width: 100%;
         justify-content: space-between;
+        align-items: center;
         padding: 12px;
         background: var(--bg-color);
         border: 1px solid var(--border-color);
@@ -264,6 +270,12 @@
         align-items: center;
       }
 
+      .queue-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       .queue-item-index {
         font-weight: bold;
         color: var(--accent-color);
@@ -272,6 +284,34 @@
 
       .queue-item-name {
         font-weight: 500;
+      }
+
+      .kick-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--danger-color);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 8px;
+      }
+
+      .kick-btn:hover:not(:disabled) {
+        background: #ff4040;
+      }
+
+      .kick-btn:focus:not(:disabled) {
+        outline: 2px solid var(--danger-color);
+        outline-offset: 2px;
+      }
+
+      .kick-btn svg {
+        width: 14px;
+        height: 14px;
       }
 
       .live-badge {

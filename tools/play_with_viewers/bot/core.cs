@@ -331,6 +331,9 @@ public class CPHInline
     private List<Player> GetQueue()
     {
         string queueJson = CPH.GetGlobalVar<string>(QUEUE_VAR_NAME, true);
+
+        if (string.IsNullOrWhiteSpace(queueJson)) { return List<Quote>(); }
+
         return JsonConvert.DeserializeObject<List<Player>>(queueJson)
                ?? new List<Player>();
     }

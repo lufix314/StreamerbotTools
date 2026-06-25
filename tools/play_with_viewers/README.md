@@ -34,13 +34,15 @@ The following chat commands are available for queue management:
 
 ### Moderators
 
-| Command                  | Description                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------- |
-| `!add {user}`            | Add a user to the queue                                                                           |
-| `!remove {user}`         | Remove a user from the queue                                                                      |
-| `!rotate ?{number}`      | Rotate the queue by the specified number of viewers. Rotate by **one** if no number is specified. |
-| `!next ?{number}`        | Move the queue by the specified number of viewers. Move by **one** if no number is specified      |
-| `!livePlayers ?{number}` | Change the number of live players. Shows current number of live players if no number is given     |
+| Command                  | Description                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `!add {user}`            | Add a user to the queue                                                                                                         |
+| `!remove {user}`         | Remove a user from the queue                                                                                                    |
+| `!close`                 | Closes the queue. Viewers can't join or leave anymore. The queue can still be rotated and players can be added/removed by mods. |
+| `!open`                  | Opens the Queue                                                                                                                 |
+| `!rotate ?{number}`      | Rotate the queue by the specified number of viewers. Rotate by **one** if no number is specified.                               |
+| `!next ?{number}`        | Move the queue by the specified number of viewers. Move by **one** if no number is specified                                    |
+| `!livePlayers ?{number}` | Change the number of live players. Shows current number of live players if no number is given                                   |
 
 ## Custom CSS
 
