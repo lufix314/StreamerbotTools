@@ -4,11 +4,14 @@
 
 ## Streamer.bot Variables
 
-The actions added to Streamer.bot are configurable. Add the following to your _Persisted Global_ Variables to change their behaviour.
+The actions added to Streamer.bot are configurable. The following _Persisted Global_ Variables control their behaviour.
 
-| Option       | Default | Description                                                      |
-| ------------ | ------- | ---------------------------------------------------------------- |
-| `viewerLive` | `0`     | Number of viewers in the queue that can be live at the same time |
+| Option            | Default | Description                                                      |
+| ----------------- | ------- | ---------------------------------------------------------------- |
+| `viewerQueue`     | `[]`    | **DON'T MODIFY!** The current state of the queue                  |
+| `viewerLive`      | `0`     | Number of viewers in the queue that can be live at the same time |
+| `viewerQueueMsg`  | /       | Message, that is printed when opening the queue                  |
+| `viewerQueueOpen` | `false` | Whether the queue is closed or open                              |
 
 ## Configuration Options
 
