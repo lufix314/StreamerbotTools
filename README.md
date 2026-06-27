@@ -27,9 +27,13 @@ _If a dashboard exists:_
 
 Display a live queue of viewers waiting to play with you. Perfect for gaming streams where you interact with viewers one-on-one.
 
-### [Points System](/tools/points/README.md)
+### [Points System](/tools/points/README.md) (WIP)
 
 Basic points system, that awards present viewers.
+
+### [Quotes](/tools/quotes/README.md)
+
+Manage stream quotes and optionally link them to a twitch clip and display them on stream.
 
 ## Prerequisites
 

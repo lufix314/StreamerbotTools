@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Queue Dashboard</title>
+    <title>Quotes Dashboard</title>
     <style>
       :root {
         --bg-color: #ffffff;
@@ -103,6 +103,7 @@
         color: var(--text-color);
         font-size: 14px;
         min-width: 80px;
+        flex: 1;
       }
 
       input:focus {
@@ -119,7 +120,7 @@
         font-size: 14px;
         font-family: inherit;
         resize: vertical;
-        width: 100%;
+        flex: 1;
       }
 
       textarea:focus {
@@ -157,87 +158,22 @@
         justify-content: flex-end;
       }
 
-      .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 28px;
-      }
-
-      .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-
-      .toggle-slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--border-color);
-        transition: 0.3s;
-        border-radius: 4px;
-      }
-
-      .toggle-slider:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: 0.3s;
-        border-radius: 4px;
-      }
-
-      input:checked + .toggle-slider {
-        background-color: var(--accent-color);
-      }
-
-      input:checked + .toggle-slider:before {
-        transform: translateX(22px);
-      }
-
-      input:focus + .toggle-slider {
-        outline: 2px solid var(--accent-color);
-        outline-offset: 2px;
-      }
-
-      input:disabled + .toggle-slider {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
       .small-btn {
         font-size: 12px;
         padding: 4px 12px;
       }
 
-      .quick-actions {
-        display: flex;
-        justify-content: space-evenly;
-      }
-
-      .action-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .queue-list {
+      .quotes-list {
         list-style: none;
       }
 
-      .queue-container {
+      .quotes-container {
         display: flex;
-        align-items: baseline;
+        align-items: center;
+        margin-bottom: 8px;
       }
 
-      .queue-item {
+      .quote-item {
         display: flex;
         width: 100%;
         justify-content: space-between;
@@ -246,49 +182,47 @@
         background: var(--bg-color);
         border: 1px solid var(--border-color);
         border-radius: 4px;
-        margin-bottom: 8px;
-        cursor: grab;
-        transition:
-          transform 0.2s,
-          border-color 0.2s;
+        transition: border-color 0.2s;
       }
 
-      .queue-item:hover {
+      .quote-item:hover {
         border-color: var(--accent-color);
       }
 
-      .queue-item.dragging {
-        opacity: 0.5;
-        transform: scale(1.01);
-      }
-
-      .queue-item.drag-over {
-        border-color: var(--accent-color);
-        border-style: dashed;
-      }
-
-      .queue-item-info {
+      .quote-item-info {
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
       }
 
-      .queue-item-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .queue-item-index {
+      .quote-item-index {
         font-weight: bold;
         color: var(--accent-color);
-        min-width: 24px;
+        font-size: 10pt;
       }
 
-      .queue-item-name {
-        font-weight: 500;
+      .quote-item-quote {
+        font-size: 14px;
+        font-style: italic;
       }
 
-      .kick-btn {
+      .quote-item-author {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      .clip-link {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 12px;
+      }
+
+      .clip-link:hover {
+        text-decoration: underline;
+      }
+
+      .delete-btn {
         width: 24px;
         height: 24px;
         border-radius: 50%;
@@ -302,29 +236,21 @@
         margin: 8px;
       }
 
-      .kick-btn:hover:not(:disabled) {
+      .delete-btn:hover:not(:disabled) {
         background: var(--danger-hover-color);
       }
 
-      .kick-btn:focus:not(:disabled) {
+      .delete-btn:focus:not(:disabled) {
         outline: 2px solid var(--danger-color);
         outline-offset: 2px;
       }
 
-      .kick-btn svg {
+      .delete-btn svg {
         width: 14px;
         height: 14px;
       }
 
-      .live-badge {
-        padding: 2px 8px;
-        background: var(--accent-color);
-        color: white;
-        border-radius: 12px;
-        font-size: 10pt;
-      }
-
-      .empty-queue {
+      .empty-list {
         text-align: center;
         color: var(--text-color);
         opacity: 0.6;
@@ -340,6 +266,16 @@
         display: none !important;
       }
 
+      label.required::after {
+        content: " *";
+        color: var(--danger-color);
+      }
+
+      input:required:user-invalid,
+      textarea:required:user-invalid {
+        border-color: var(--danger-color);
+      }
+
       @media (max-width: 600px) {
         body {
           padding: 12px;
@@ -349,74 +285,52 @@
   </head>
   <body>
     <main>
-      <h1>Queue Dashboard</h1>
+      <h1>Quotes Dashboard</h1>
 
-      <section aria-labelledby="settings-heading">
-        <h2 id="settings-heading">
-          Settings
+      <section aria-labelledby="add-quote-heading">
+        <h2 id="add-quote-heading">New Quote</h2>
+        <form id="add-quote-form" novalidate>
           <div class="input-group">
-            <label for="queue-open-toggle" class="hidden">Queue Open:</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="queue-open-toggle" />
-              <span class="toggle-slider"></span>
-            </label>
+            <label for="quote-input" class="required hidden">Quote text:</label>
+            <textarea
+              id="quote-input"
+              name="quote"
+              rows="3"
+              placeholder="Enter the quote text..."
+              required
+            ></textarea>
           </div>
-        </h2>
-        <div class="input-group">
-          <label for="viewer-live">Viewers Live:</label>
-          <input type="number" id="viewer-live" min="0" max="100" value="1" />
-        </div>
-        <div class="input-group">
-          <label for="queue-msg">Queue Message:</label>
-          <textarea
-            id="queue-msg"
-            rows="3"
-            placeholder="The queue is open. Join with !join"
-            style="margin-top: 4px"
-          ></textarea>
-        </div>
-        <div class="button-box">
-          <button id="save-settings-btn">Save</button>
-        </div>
+          <div class="input-group">
+            <label for="author-input" class="required">Author:</label>
+            <input
+              type="text"
+              id="author-input"
+              name="author"
+              placeholder="Enter author name..."
+              required
+            />
+          </div>
+          <div class="input-group">
+            <label for="clip-id-input">Clip ID/URL:</label>
+            <input
+              type="text"
+              id="clip-id-input"
+              name="clipId"
+              placeholder="e.g., ClipIdOrLink"
+            />
+          </div>
+          <div class="button-box">
+            <button type="submit">Add Quote</button>
+          </div>
+        </form>
       </section>
 
-      <section aria-labelledby="actions-heading">
-        <h2 id="actions-heading">Quick Actions</h2>
-        <div class="quick-actions">
-          <div class="action-row">
-            <label for="rotate-count" class="hidden">Rotate count:</label>
-            <input
-              type="number"
-              id="rotate-count"
-              min="1"
-              max="100"
-              value="1"
-              aria-label="Rotate count"
-            />
-            <button id="rotate-btn">Rotate</button>
-          </div>
-          <div class="action-row">
-            <label for="next-count" class="hidden">Next count:</label>
-            <input
-              type="number"
-              id="next-count"
-              min="1"
-              max="100"
-              value="1"
-              aria-label="Next count"
-            />
-            <button id="next-btn">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="queue-heading">
-        <h2 id="queue-heading">
-          <span>Queue <span class="hint">(drag to reorder)</span></span>
-          <button id="clear-queue-btn" class="small-btn">Clear</button>
+      <section aria-labelledby="quotes-heading">
+        <h2 id="quotes-heading">
+          <span>Quotes <span id="quotes-count" class="hint">(0)</span></span>
         </h2>
-        <ul id="queue-list" class="queue-list">
-          <li class="empty-queue">No viewers in queue</li>
+        <ul id="quotes-list" class="quotes-list">
+          <li class="empty-list">No quotes available</li>
         </ul>
       </section>
     </main>
