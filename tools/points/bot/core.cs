@@ -180,8 +180,8 @@ public class CPHInline
 
     private string GetUserName(string name)
     {
-        viewerName = viewerName.TrimStart('@');
-        var userInfo = CPH.TwitchGetUserInfoByLogin(viewerName);
+        name = name.TrimStart('@');
+        var userInfo = CPH.TwitchGetUserInfoByLogin(name);
 
         return userInfo.UserName;
     }
