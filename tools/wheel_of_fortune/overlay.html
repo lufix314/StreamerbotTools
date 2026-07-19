@@ -9,8 +9,12 @@
         --font: "Segoe UI", Roboto, sans-serif;
         --font-size: 14pt;
         --text-color: #fff;
-        --fade-duration: 1s;
-        --fade-out-delay: 5s;
+        --show-result-duration: 3s;
+
+        --result-background: #1a1a1a;
+        --result-text-color: #ffffff;
+        --result-text-font-size: 48px;
+        --result-text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 
         --color-1: #e74c3c;
         --color-2: #3498db;
@@ -39,20 +43,12 @@
 
       #container {
         position: relative;
-        transition: opacity var(--fade-duration) ease-in-out;
+        transition: opacity 1s ease-in-out;
         opacity: 0;
       }
 
       #wheel {
         display: block;
-      }
-
-      #container.fade-in {
-        opacity: 1;
-      }
-
-      #container.fade-out {
-        opacity: 0;
       }
 
       #pointer {
@@ -79,6 +75,35 @@
         font-size: 24px;
       }
 
+      #result-card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100vw;
+        transform: translate(-50%, -50%);
+        background: var(--result-background);
+        padding: 40px 60px;
+        border-radius: 16px;
+        opacity: 0;
+        transition: opacity .5s ease-in-out;
+        z-index: 100;
+      }
+
+      .result-name {
+        font-size: var(--result-text-font-size);
+        font-weight: bold;
+        color: var(--result-text-color);
+        text-shadow: var(--result-text-shadow);
+      }
+
+      .fade-in {
+        opacity: 1 !important;
+      }
+
+      .fade-out {
+        opacity: 0 !important;
+      }
+
       .hidden {
         display: none;
       }
@@ -89,6 +114,10 @@
       <canvas id="wheel"></canvas>
       <div id="pointer"></div>
     </div>
+    <div id="result-card">
+      <span class="result-name"></span>
+    </div>
+
     <div id="no-connection">Overlay Could not connect to Streamer.bot</div>
 
     <script type="module" src="config.js"></script>

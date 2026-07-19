@@ -61,6 +61,20 @@ function fadeOut(): void {
   container.classList.add("fade-out");
 }
 
+function showResult(name: string): void {
+  const card = document.getElementById("result-card") as HTMLElement;
+  const nameEl = card.querySelector(".result-name") as HTMLElement;
+  nameEl.textContent = name;
+  card.classList.remove("fade-out");
+  card.classList.add("fade-in");
+}
+
+function hideResult(): void {
+  const card = document.getElementById("result-card") as HTMLElement;
+  card.classList.remove("fade-in");
+  card.classList.add("fade-out");
+}
+
 function initCanvas() {
   const container = document.getElementById("container") as HTMLElement;
   const canvas = document.getElementById("wheel") as HTMLCanvasElement;
@@ -263,7 +277,11 @@ async function handleSpinEvent(eventData: any) {
 
   const targetRotation = getTargetRotation(payload.idx);
   animateSpin(targetRotation, spinDuration, () => {
-    setTimeout(fadeOut, getFadeOutDelay());
+    showResult(payload.name);
+    setTimeout(() => {
+      fadeOut();
+      hideResult();
+    }, getFadeOutDelay());
   });
 }
 
