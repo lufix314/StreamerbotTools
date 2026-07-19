@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wheel of Fortune</title>
+    <style>
+      :root {
+        --font: "Segoe UI", Roboto, sans-serif;
+        --font-size: 14pt;
+        --text-color: #fff;
+
+        --color-1: #e74c3c;
+        --color-2: #3498db;
+        --color-3: #2ecc71;
+        --color-4: #f39c12;
+        --color-5: #9b59b6;
+        --color-6: #1abc9c;
+        --color-7: #e91e63;
+        --color-8: #00bcd4;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: transparent;
+        font-family: var(--font);
+        font-size: var(--font-size);
+        color: var(--text-color);
+        display: flex;
+        justify-content: center;
+      }
+
+      #container {
+        position: relative;
+      }
+
+      #wheel {
+        display: block;
+      }
+
+      #pointer {
+        position: absolute;
+        top: 50%;
+        left: calc(100% - 35px);
+        transform: translateX(-50%) translateY(-50%) rotate(90deg);
+        width: 0;
+        height: 0;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-top: 40px solid var(--text-color);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        z-index: 10;
+      }
+
+      #no-connection {
+        font-style: italic;
+        color: red;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <canvas id="wheel"></canvas>
+      <div id="pointer"></div>
+    </div>
+    <div id="no-connection">Overlay Could not connect to Streamer.bot</div>
+
+    <script type="module" src="config.js"></script>
+    <script type="module" src="overlay.js"></script>
+  </body>
+</html>

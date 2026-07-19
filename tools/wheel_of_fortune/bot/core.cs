@@ -3,13 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Newtonsoft.Json;
 
 public class CPHInline
 {
+    private const int SPIN_DURATION = 5;
+
     private const string ENTRIES_VAR_NAME = "wofEntries";
 
+    private const string SPIN_WHEEL_EVENT = "SpinTheWheel";
+    private const string WHEEL_RESULT_EVENT = "WheelResult";
+
     private Random rnd = new Random();
+
+    public void Init()
+    {
+        string[] categories = {"Wheel of Fortune"};
+        CPH.RegisterCustomTrigger("Spin the Wheel", SPIN_WHEEL_EVENT, categories);
+        CPH.RegisterCustomTrigger("Wheel of Fortune Result", WHEEL_RESULT_EVENT, categories);
+    }
 
     public bool AddEntry()
     {
@@ -82,7 +95,18 @@ public class CPHInline
         var entries = GetEntries();
         var idx = PickRandEntry(entries);
 
-        SendMessage($"Result idx: {idx}, {entries.Count()}");
+        var payload = new Dictionary<string, object>
+        {
+            { "idx", idx },
+            { "name", entries[idx].name },
+            { "time",  SPIN_DURATION }
+        };
+        CPH.TriggerCodeEvent(SPIN_WHEEL_EVENT, payload);
+
+        Thread.Sleep(SPIN_DURATION * 1000);
+
+        CPH.TriggerCodeEvent(WHEEL_RESULT_EVENT, payload);
+
         SendMessage($"Result: {entries[idx].name}");
         return true;
     }
