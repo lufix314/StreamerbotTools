@@ -29,6 +29,38 @@ let totalMultiplier = 0;
 let currentRotation = 0;
 let isSpinning = false;
 
+const FADE_DURATION = 1000;
+
+function getFadeOutDelay(): number {
+  const styles = getComputedStyle(document.documentElement);
+  const delay = styles
+    .getPropertyValue("--show-result-duration")
+    .trim()
+    .replace("s", "");
+  const parsed = parseFloat(delay);
+  return isNaN(parsed) ? 3000 : parsed * 1000;
+}
+
+function fadeIn(): Promise<void> {
+  return new Promise((resolve) => {
+    const container = document.getElementById("container");
+    if (!container) {
+      resolve();
+      return;
+    }
+    container.classList.remove("fade-out");
+    container.classList.add("fade-in");
+    setTimeout(resolve, FADE_DURATION);
+  });
+}
+
+function fadeOut(): void {
+  const container = document.getElementById("container");
+  if (!container) return;
+  container.classList.remove("fade-in");
+  container.classList.add("fade-out");
+}
+
 function initCanvas() {
   const container = document.getElementById("container") as HTMLElement;
   const canvas = document.getElementById("wheel") as HTMLCanvasElement;
@@ -147,7 +179,11 @@ function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
 
-function animateSpin(targetRotation: number, duration: number) {
+function animateSpin(
+  targetRotation: number,
+  duration: number,
+  onComplete: () => void,
+) {
   if (isSpinning) return;
   isSpinning = true;
 
@@ -177,6 +213,7 @@ function animateSpin(targetRotation: number, duration: number) {
     } else {
       currentRotation = targetRotation % (2 * Math.PI);
       isSpinning = false;
+      onComplete();
     }
   }
 
@@ -207,7 +244,7 @@ function getTargetRotation(targetIndex: number): number {
   return currentRotation + rotationToTarget + targetAngle;
 }
 
-function handleSpinEvent(eventData: any) {
+async function handleSpinEvent(eventData: any) {
   const ev = eventData.data;
   if (!ev || ev.eventName !== SPIN_EVENT) {
     return;
@@ -219,8 +256,15 @@ function handleSpinEvent(eventData: any) {
   }
 
   const payload: SpinPayload = data;
+  const totalTime = payload.time * 1000;
+  const spinDuration = Math.max(totalTime - FADE_DURATION, 100);
+
+  await fadeIn();
+
   const targetRotation = getTargetRotation(payload.idx);
-  animateSpin(targetRotation, payload.time * 1000);
+  animateSpin(targetRotation, spinDuration, () => {
+    setTimeout(fadeOut, getFadeOutDelay());
+  });
 }
 
 function updateEntries(jsonStr: string) {

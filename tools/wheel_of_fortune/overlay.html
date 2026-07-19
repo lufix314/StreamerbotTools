@@ -9,6 +9,8 @@
         --font: "Segoe UI", Roboto, sans-serif;
         --font-size: 14pt;
         --text-color: #fff;
+        --fade-duration: 1s;
+        --fade-out-delay: 5s;
 
         --color-1: #e74c3c;
         --color-2: #3498db;
@@ -37,10 +39,20 @@
 
       #container {
         position: relative;
+        transition: opacity var(--fade-duration) ease-in-out;
+        opacity: 0;
       }
 
       #wheel {
         display: block;
+      }
+
+      #container.fade-in {
+        opacity: 1;
+      }
+
+      #container.fade-out {
+        opacity: 0;
       }
 
       #pointer {
