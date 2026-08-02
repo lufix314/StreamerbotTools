@@ -1,0 +1,42 @@
+{
+  "hasDashboard": true,
+  "hasOverlay": true,
+  "commands": {
+    "everyone": [
+      {
+        "command": "!join",
+        "description": "Add yourself to the queue. If you are already in the queue this shows your position."
+      },
+      {
+        "command": "!leave",
+        "description": "Remove yourself from the queue."
+      },
+      {
+        "command": "!queue ?{\"live\" or number}",
+        "description": "Show the first x entries of the queue. If \"live\" is given only live viewers will be shown. If no number is given the whole queue is shown"
+      }
+    ],
+    "moderators": [
+      {
+        "command": "!add {user}",
+        "description": "Add user to the queue."
+      },
+      {
+        "command": "!remove {user}",
+        "description": "Remove user from the queue."
+      },
+      {
+        "command": "!rotate ?{number}",
+        "description": "Rotate the queue by x viewers. Rotate by one if no number is specified."
+      },
+      {
+        "command": "!next ?{number}",
+        "description": "Remove the first x viewers from the queue. Move by one if no number is specified."
+      },
+      {
+        "command": "!livePlayers ?{number}",
+        "description": "Change the number of live players. Shows current number of live players if no number is given."
+      }
+    ]
+  }
+}

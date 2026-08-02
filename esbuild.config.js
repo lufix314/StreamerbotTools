@@ -2,7 +2,7 @@ import { build, context } from "esbuild";
 import alias from "esbuild-plugin-alias";
 import { readdir, writeFile, readFile, copyFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
-import { join, dirname, basename, relative } from "path";
+import { join, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 
 const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,53 @@ async function getSharedAliases() {
   return aliases;
 }
 
-async function getBuildConfig(toolName, watch = false) {
+function getCommonOptions(outDir, shared, watch) {
+  return {
+    bundle: true,
+    outdir: outDir,
+    platform: "browser",
+    target: "es2020",
+    format: "esm",
+    plugins: [alias({ ...shared })],
+    sourcemap: watch,
+    minify: false,
+  };
+}
+
+async function getStartpageBuildConfig(shared, watch = false) {
+  const startpageDir = join(ROOT_DIR, "startpage");
+  const indexPath = join(startpageDir, "index.ts");
+  const htmlPath = join(startpageDir, "index.html");
+  const commandsIndexPath = join(startpageDir, "commands.ts");
+  const commandsHtmlPath = join(startpageDir, "commands.html");
+
+  const commonOptions = getCommonOptions(BUILD_DIR, shared, watch);
+
+  return {
+    commonOptions,
+    indexPath,
+    htmlPath,
+    commandsIndexPath,
+    commandsHtmlPath,
+  };
+}
+
+async function copyStartpageHtml(tools, outDir, htmlPath, commandsHtmlPath) {
+  const toolsJson = JSON.stringify(tools);
+  const toolsScript = `<script>const DISCOVERED_TOOLS = ${toolsJson};</script>\n`;
+
+  let indexContent = await readFile(htmlPath, "utf-8");
+  indexContent = indexContent.replace(/(<\/head>)/, `${toolsScript}$1`);
+  await writeFile(join(outDir, "index.html"), indexContent);
+  console.log(`Copied and updated index.html for startpage`);
+
+  let commandsContent = await readFile(commandsHtmlPath, "utf-8");
+  commandsContent = commandsContent.replace(/(<\/head>)/, `${toolsScript}$1`);
+  await writeFile(join(outDir, "commands.html"), commandsContent);
+  console.log(`Copied and updated commands.html for startpage`);
+}
+
+async function getBuildConfig(toolName, shared, watch = false) {
   const toolDir = join(TOOLS_DIR, toolName);
   const outDir = join(BUILD_DIR, toolName);
 
@@ -47,19 +93,7 @@ async function getBuildConfig(toolName, watch = false) {
   ].filter((p) => existsSync(p));
   const configPath = join(toolDir, "config.ts");
 
-  const sharedAliases = await getSharedAliases();
-
-  const commonOptions = {
-    bundle: true,
-    outdir: outDir,
-    platform: "browser",
-    target: "es2020",
-    format: "esm",
-    plugins: [alias({ ...sharedAliases })],
-    sourcemap: watch,
-    minify: false,
-  };
-
+  const commonOptions = getCommonOptions(outDir, shared, watch);
   return { commonOptions, toolName, outDir, htmlPaths, indexPaths, configPath };
 }
 
@@ -71,7 +105,7 @@ async function copyHtmlWithConfig(toolName, outDir, htmlPaths) {
     htmlContent = htmlContent.replace(/(<\/head>)/, `${CDN_SCRIPT}$1`);
 
     await writeFile(join(outDir, fileName), htmlContent);
-    console.log(`Copied and updated overlay.html for ${toolName}`);
+    console.log(`Copied and updated ${fileName} for ${toolName}`);
   });
 }
 
@@ -95,8 +129,10 @@ async function copyAssets(toolDir, outDir) {
 
 async function buildAll() {
   const tools = await getTools();
+  const shared = await getSharedAliases();
+
   const configs = await Promise.all(
-    tools.map((tool) => getBuildConfig(tool, false)),
+    tools.map((tool) => getBuildConfig(tool, shared, false)),
   );
 
   const promises = configs.map(
@@ -126,13 +162,32 @@ async function buildAll() {
   );
 
   await Promise.all(promises);
+
   console.log("All tools built successfully");
+  console.log();
+
+  const {
+    commonOptions: startpageOptions,
+    indexPath: startpageIndex,
+    htmlPath: startpageHtml,
+    commandsIndexPath: commandsIndexPath,
+    commandsHtmlPath: commandsHtmlPath,
+  } = await getStartpageBuildConfig(shared, false);
+  await build({
+    ...startpageOptions,
+    entryPoints: [startpageIndex, commandsIndexPath],
+  });
+  await copyStartpageHtml(tools, BUILD_DIR, startpageHtml, commandsHtmlPath);
+
+  console.log("Built: Startpage");
 }
 
 async function watchAll() {
   const tools = await getTools();
+  const shared = await getSharedAliases();
+
   const configs = await Promise.all(
-    tools.map((tool) => getBuildConfig(tool, true)),
+    tools.map((tool) => getBuildConfig(tool, shared, true)),
   );
 
   const contexts = await Promise.all(
@@ -169,6 +224,36 @@ async function watchAll() {
       },
     ),
   );
+
+  const {
+    commonOptions: startpageOptions,
+    indexPath: startpageIndex,
+    htmlPath: startpageHtml,
+    commandsIndexPath: commandsIndexPath,
+    commandsHtmlPath: commandsHtmlPath,
+  } = await getStartpageBuildConfig(shared, true);
+  contexts.push(
+    await context({
+      ...startpageOptions,
+      entryPoints: [startpageIndex, commandsIndexPath],
+      plugins: [
+        {
+          name: "assets-copier",
+          setup(build) {
+            build.onEnd(async () => {
+              await copyStartpageHtml(
+                tools,
+                BUILD_DIR,
+                startpageHtml,
+                commandsHtmlPath,
+              );
+            });
+          },
+        },
+      ],
+    }),
+  );
+  console.log(`Watching: Startpage`);
 
   await Promise.all(contexts.map((ctx) => ctx.watch()));
   console.log("All tools are now being watched. Press Ctrl+C to stop.");

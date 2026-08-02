@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Commands - Streamer.bot Tools</title>
+        <style>
+            :root {
+                --bg-color: #ffffff;
+                --text-color: #1a1a1a;
+                --card-bg: #f5f5f5;
+                --border-color: #e0e0e0;
+                --accent-color: #9147ff;
+                --accent-hover: #7c38e0;
+                --danger-color: #e04040;
+                --success-color: #40c040;
+                --drag-bg: #e8e0ff;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg-color: #1a1a1a;
+                    --text-color: #f0f0f0;
+                    --card-bg: #2a2a2a;
+                    --border-color: #404040;
+                    --accent-color: #a863ff;
+                    --accent-hover: #b873ff;
+                    --danger-color: #ff6060;
+                    --success-color: #60ff60;
+                    --drag-bg: #3a3050;
+                }
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Segoe UI", Roboto, sans-serif;
+                background: var(--bg-color);
+                color: var(--text-color);
+                padding: 20px;
+                min-height: 100vh;
+            }
+
+            h1,
+            h2 {
+                font-weight: 600;
+            }
+
+            h1 {
+                font-size: 24pt;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                font-size: 18pt;
+                margin-bottom: 12px;
+            }
+
+            h3 {
+                font-size: 14pt;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            .hint {
+                font-size: 12pt;
+                font-weight: 200;
+                opacity: 0.8;
+                vertical-align: center;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .header button {
+                padding: 4px 16px;
+                margin-bottom: 8px;
+            }
+
+            a {
+                color: var(--text-color);
+            }
+
+            main {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            section {
+                background: var(--card-bg);
+                border-radius: 8px;
+                padding: 16px;
+                margin: 16px 0px;
+                border: 1px solid var(--border-color);
+            }
+
+            label {
+                padding: 8px 4px;
+                font-size: 12pt;
+            }
+
+            input[type="text"],
+            input[type="number"],
+            input[type="password"],
+            select {
+                padding: 8px 12px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                background: var(--bg-color);
+                color: var(--text-color);
+                font-size: 14px;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            input:focus,
+            select:focus {
+                outline: 2px solid var(--accent-color);
+                border-color: transparent;
+            }
+
+            .input-row {
+                display: flex;
+                gap: 16px;
+                margin-bottom: 12px;
+            }
+
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .input-group input,
+            .input-group select {
+                min-width: 100%;
+            }
+
+            button {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                background: var(--accent-color);
+                color: white;
+                font-size: 14px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            button:hover:not(:disabled) {
+                background: var(--accent-hover);
+            }
+
+            button:focus {
+                outline: 2px solid var(--accent-color);
+                outline-offset: 2px;
+            }
+
+            button a {
+                text-decoration: none;
+            }
+
+            .hidden {
+                display: none !important;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 8px;
+            }
+
+            th,
+            td {
+                padding: 10px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            th {
+                font-weight: 600;
+                background: var(--bg-color);
+            }
+
+            td.command {
+                font-family: "Consolas", "Monaco", monospace;
+                font-size: 13px;
+                color: var(--accent-color);
+                white-space: nowrap;
+            }
+
+            td.description {
+                font-size: 14px;
+            }
+
+            .syntax-hint {
+                padding: 12px;
+                background: var(--bg-color);
+                border-radius: 4px;
+                border: 1px solid var(--border-color);
+            }
+
+            .syntax-hint p {
+                margin-bottom: 6px;
+                font-size: 14px;
+            }
+
+            .syntax-hint p:last-child {
+                margin-bottom: 0;
+            }
+
+            .syntax-hint code {
+                font-family: "Consolas", "Monaco", monospace;
+                background: var(--card-bg);
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 13px;
+            }
+
+            .no-commands {
+                padding: 20px;
+                text-align: center;
+                opacity: 0.7;
+            }
+
+            .error-message {
+                background: var(--danger-color);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                margin: 16px 0;
+            }
+
+            @media (max-width: 600px) {
+                body {
+                    padding: 12px;
+                }
+
+                .input-row {
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                table {
+                    display: block;
+                    overflow-x: auto;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Commands</h1>
+            <section>
+                <h2>Tool</h2>
+                <div class="input-group" id="tool-select-group">
+                    <label for="tool-select" class="hidden">Select Tool</label>
+                    <select id="tool-select"></select>
+                </div>
+            </section>
+            <section>
+                <h2>Command Syntax</h2>
+                <div class="syntax-hint">
+                    <p><code>!command</code> - Basic command (no arguments)</p>
+                    <p><code>!command {type}</code> - Command with required argument. Replace <code>{type}</code> with an actual input of the given type.</p>
+                    <p><code>!command ?{type}</code> - Command with optional argument. Can be omitted.</p>
+                    <p><code>!command {"value" or type}</code> - Argument with multiple options. Choose on of the given types (e.g. <code>!command value</code>).</p>
+                </div>
+            </section>
+            <section id="everyone-commands-section" class="hidden">
+                <h2>Everyone</h2>
+                <table id="everyone-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            <section id="moderator-commands-section" class="hidden">
+                <h2>Moderators</h2>
+                <table id="moderator-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            <section id="no-commands" class="hidden">
+                <p class="no-commands">No commands available for this tool.</p>
+            </section>
+        </main>
+        <script type="module" src="commands.js"></script>
+    </body>
+</html>
