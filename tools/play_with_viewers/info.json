@@ -26,6 +26,22 @@
         "description": "Remove user from the queue."
       },
       {
+        "command": "!open",
+        "description": "Open the Queue. And sends a message to pin in chat (Can be edited in the Dashboard)."
+      },
+      {
+        "command": "!close",
+        "description": "Close the queue. Viewers can't join/leave anymore. The queue can still be rotated and players can be added/removed by mods."
+      },
+      {
+        "command": "!clear",
+        "description": "Clear the queue."
+      },
+      {
+        "command": "!remove {user}",
+        "description": "Remove user from the queue."
+      },
+      {
         "command": "!rotate ?{number}",
         "description": "Rotate the queue by x viewers. Rotate by one if no number is specified."
       },
