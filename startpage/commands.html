@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Streamer.bot Tools</title>
+        <title>Commands - Streamer.bot Tools</title>
         <style>
             :root {
                 --bg-color: #ffffff;
@@ -88,7 +88,7 @@
             }
 
             main {
-                max-width: 800px;
+                max-width: 900px;
                 margin: 0 auto;
             }
 
@@ -166,78 +166,67 @@
                 text-decoration: none;
             }
 
-            #generate-btn {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                width: 100%;
-                max-width: 300px;
-            }
-
             .hidden {
                 display: none !important;
             }
 
-            .result-item {
-                margin-bottom: 16px;
-                padding-bottom: 16px;
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .result-item:last-child {
-                border-bottom: none;
-                margin-bottom: 0;
-                padding-bottom: 0;
-            }
-
-            .result-row {
-                display: flex;
-                gap: 8px;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-
-            .result-row code {
-                background: var(--bg-color);
-                padding: 8px 12px;
-                border-radius: 4px;
-                border: 1px solid var(--border-color);
-                word-break: break-all;
-                flex: 1;
-                min-width: 200px;
-            }
-
-            .code-block {
-                position: relative;
-            }
-
-            .code-block pre {
-                background: var(--bg-color);
-                padding: 12px;
-                border-radius: 4px;
-                border: 1px solid var(--border-color);
-                overflow-x: auto;
-                margin-bottom: 8px;
-            }
-
-            .code-block code {
-                font-family: "Consolas", "Monaco", monospace;
-                font-size: 13px;
-                display: block;
-            }
-
-            .code-block button {
-                margin-right: 8px;
-            }
-
-            .action-buttons {
-                display: flex;
-                gap: 12px;
+            table {
+                width: 100%;
+                border-collapse: collapse;
                 margin-top: 8px;
             }
 
-            .hidden {
-                display: none !important;
+            th,
+            td {
+                padding: 10px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            th {
+                font-weight: 600;
+                background: var(--bg-color);
+            }
+
+            td.command {
+                font-family: "Consolas", "Monaco", monospace;
+                font-size: 13px;
+                color: var(--accent-color);
+                white-space: nowrap;
+            }
+
+            td.description {
+                font-size: 14px;
+            }
+
+            .syntax-hint {
+                padding: 12px;
+                background: var(--bg-color);
+                border-radius: 4px;
+                border: 1px solid var(--border-color);
+            }
+
+            .syntax-hint p {
+                margin-bottom: 6px;
+                font-size: 14px;
+            }
+
+            .syntax-hint p:last-child {
+                margin-bottom: 0;
+            }
+
+            .syntax-hint code {
+                font-family: "Consolas", "Monaco", monospace;
+                background: var(--card-bg);
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 13px;
+            }
+
+            .no-commands {
+                padding: 20px;
+                text-align: center;
+                opacity: 0.7;
             }
 
             @media (max-width: 600px) {
@@ -249,12 +238,17 @@
                     flex-direction: column;
                     gap: 12px;
                 }
+
+                table {
+                    display: block;
+                    overflow-x: auto;
+                }
             }
         </style>
     </head>
     <body>
         <main>
-            <h1>Streamer.bot Tools</h1>
+            <h1>Commands</h1>
             <section>
                 <h2>Tool</h2>
                 <div class="input-group" id="tool-select-group">
@@ -263,71 +257,44 @@
                 </div>
             </section>
             <section>
-                <h2>
-                    Connection Settings
-                    <span class="hint">(Streamer.bot WebSocket Server settings)</span>
-                </h2>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="host">Host</label>
-                        <input type="text" id="host" value="127.0.0.1" placeholder="127.0.0.1" />
-                    </div>
-                    <div class="input-group">
-                        <label for="port">Port</label>
-                        <input type="number" id="port" value="8080" min="1" max="65535" />
-                    </div>
-                </div>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="endpoint">Endpoint</label>
-                        <input type="text" id="endpoint" value="/" placeholder="/" />
-                    </div>
-                    <div class="input-group">
-                        <label for="password">Password (optional)</label>
-                        <input type="password" id="password" placeholder="Leave empty for no auth" />
-                    </div>
+                <h2>Command Syntax</h2>
+                <div class="syntax-hint">
+                    <p><code>!command</code> - Basic command (no arguments)</p>
+                    <p><code>!command {type}</code> - Command with required argument. Replace <code>{type}</code> with an actual input of the given type.</p>
+                    <p><code>!command ?{type}</code> - Command with optional argument. Can be omitted.</p>
+                    <p><code>!command {"value" or type}</code> - Argument with multiple options. Choose on of the given types (e.g. <code>!command value</code>).</p>
                 </div>
             </section>
-            <button id="generate-btn">Generate Setup</button>
-            <section id="results-section" class="hidden">
-                <div class="result-item">
-                    <div class="header">
-                        <h3>
-                            Streamer.bot Actions/Command
-                            <span class="hint">(Import into Streamer.bot)</span>
-                        </h3>
-                        <button><a id="open-commands" href="">Show Commands</a></button>
-                    </div>
-                    <div class="code-block">
-                        <pre><code id="sb-content"></code></pre>
-                    </div>
-                    <div class="action-buttons">
-                        <button id="sb-copy">Copy</button>
-                        <button><a id="sb-download" href="" download>Download</a></button>
-                    </div>
-                </div>
-                <div id="dashboard-url-container" class="result-item">
-                    <h3>
-                        Dashboard URL
-                        <span class="hint">(Open in your browser to interact with the tool)</span>
-                    </h3>
-                    <div class="result-row">
-                        <code id="dashboard-url"></code>
-                        <button>Copy</button>
-                    </div>
-                </div>
-                <div id="overlay-url-container" class="result-item">
-                    <h3>
-                        Overlay URL
-                        <span class="hint">(Add to your OBS as a browser source)</span>
-                    </h3>
-                    <div class="result-row">
-                        <code id="overlay-url"></code>
-                        <button>Copy</button>
-                    </div>
-                </div>
+            <section id="everyone-commands-section" class="hidden">
+                <h2>Everyone</h2>
+                <table id="everyone-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            <section id="moderator-commands-section" class="hidden">
+                <h2>Moderators</h2>
+                <table id="moderator-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            <section id="no-commands" class="hidden">
+                <p class="no-commands">No commands available for this tool.</p>
             </section>
         </main>
-        <script type="module" src="index.js"></script>
+        <script type="module" src="commands.js"></script>
     </body>
 </html>

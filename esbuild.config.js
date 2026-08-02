@@ -50,21 +50,33 @@ async function getStartpageBuildConfig(shared, watch = false) {
   const startpageDir = join(ROOT_DIR, "startpage");
   const indexPath = join(startpageDir, "index.ts");
   const htmlPath = join(startpageDir, "index.html");
+  const commandsIndexPath = join(startpageDir, "commands.ts");
+  const commandsHtmlPath = join(startpageDir, "commands.html");
 
   const commonOptions = getCommonOptions(BUILD_DIR, shared, watch);
 
-  return { commonOptions, indexPath, htmlPath };
+  return {
+    commonOptions,
+    indexPath,
+    htmlPath,
+    commandsIndexPath,
+    commandsHtmlPath,
+  };
 }
 
-async function copyStartpageHtml(tools, outDir, htmlPath) {
+async function copyStartpageHtml(tools, outDir, htmlPath, commandsHtmlPath) {
   const toolsJson = JSON.stringify(tools);
   const toolsScript = `<script>const DISCOVERED_TOOLS = ${toolsJson};</script>\n`;
 
-  let htmlContent = await readFile(htmlPath, "utf-8");
-  htmlContent = htmlContent.replace(/(<\/head>)/, `${toolsScript}$1`);
+  let indexContent = await readFile(htmlPath, "utf-8");
+  indexContent = indexContent.replace(/(<\/head>)/, `${toolsScript}$1`);
+  await writeFile(join(outDir, "index.html"), indexContent);
+  console.log(`Copied and updated index.html for startpage`);
 
-  await writeFile(join(outDir, "index.html"), htmlContent);
-  console.log(`Copied and updated html for startpage`);
+  let commandsContent = await readFile(commandsHtmlPath, "utf-8");
+  commandsContent = commandsContent.replace(/(<\/head>)/, `${toolsScript}$1`);
+  await writeFile(join(outDir, "commands.html"), commandsContent);
+  console.log(`Copied and updated commands.html for startpage`);
 }
 
 async function getBuildConfig(toolName, shared, watch = false) {
@@ -158,12 +170,14 @@ async function buildAll() {
     commonOptions: startpageOptions,
     indexPath: startpageIndex,
     htmlPath: startpageHtml,
+    commandsIndexPath: commandsIndexPath,
+    commandsHtmlPath: commandsHtmlPath,
   } = await getStartpageBuildConfig(shared, false);
   await build({
     ...startpageOptions,
-    entryPoints: [startpageIndex],
+    entryPoints: [startpageIndex, commandsIndexPath],
   });
-  await copyStartpageHtml(tools, BUILD_DIR, startpageHtml);
+  await copyStartpageHtml(tools, BUILD_DIR, startpageHtml, commandsHtmlPath);
 
   console.log("Built: Startpage");
 }
@@ -215,17 +229,24 @@ async function watchAll() {
     commonOptions: startpageOptions,
     indexPath: startpageIndex,
     htmlPath: startpageHtml,
+    commandsIndexPath: commandsIndexPath,
+    commandsHtmlPath: commandsHtmlPath,
   } = await getStartpageBuildConfig(shared, true);
   contexts.push(
     await context({
       ...startpageOptions,
-      entryPoints: [startpageIndex],
+      entryPoints: [startpageIndex, commandsIndexPath],
       plugins: [
         {
           name: "assets-copier",
           setup(build) {
             build.onEnd(async () => {
-              await copyStartpageHtml(tools, BUILD_DIR, startpageHtml);
+              await copyStartpageHtml(
+                tools,
+                BUILD_DIR,
+                startpageHtml,
+                commandsHtmlPath,
+              );
             });
           },
         },

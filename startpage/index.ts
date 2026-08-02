@@ -3,26 +3,51 @@ import { Config } from "shared/config";
 declare const DISCOVERED_TOOLS: string[];
 
 interface GeneratedUrls {
+  commands: string;
   dashboard?: string;
   overlay?: string;
-  bot?: string;
+  bot: string;
+}
+
+interface ToolCommand {
+  command: string;
+  description: string;
+}
+
+interface ToolCommands {
+  everyone?: ToolCommand[];
+  moderators?: ToolCommand[];
+}
+
+interface ToolInfo {
+  hasDashboard: boolean;
+  hasOverlay: boolean;
+  commands: ToolCommands;
 }
 
 interface State {
-  configJs?: string;
-  urls: GeneratedUrls;
+  info?: ToolInfo;
+  botFile?: string;
+  urls?: GeneratedUrls;
 }
 
-const state: State = {
-  urls: {},
-};
+const state: State = {};
+
+async function getToolInfo(tool: string, baseUrl: string): Promise<ToolInfo> {
+  const req = await fetch(`${baseUrl}/${tool}/info.json`);
+
+  if (!req.ok) {
+    return { hasDashboard: true, hasOverlay: true, commands: {} };
+  }
+
+  return await req.json();
+}
 
 function generateUrls(
   tool: string,
   config: Config,
   baseUrl: string,
 ): GeneratedUrls {
-  const urls: GeneratedUrls = {};
   const params = new URLSearchParams();
 
   if (config.host && config.host !== "127.0.0.1") {
@@ -38,6 +63,9 @@ function generateUrls(
     params.set("password", config.password);
   }
 
+  const commandsUrl = new URL(`${baseUrl}/commands.html`);
+  commandsUrl.searchParams.append("tool", tool);
+
   const paramString = params.toString();
   const suffix = paramString ? `?${paramString}` : "";
 
@@ -45,34 +73,22 @@ function generateUrls(
   const overlayPath = `/${tool}/overlay.html`;
   const botPath = `/${tool}/bot.sb`;
 
-  urls.dashboard = `${baseUrl}${dashboardPath}${suffix}`;
-  urls.overlay = `${baseUrl}${overlayPath}${suffix}`;
-  urls.bot = `${baseUrl}${botPath}`;
-
-  return urls;
+  return {
+    commands: commandsUrl.toString(),
+    dashboard: `${baseUrl}${dashboardPath}${suffix}`,
+    overlay: `${baseUrl}${overlayPath}${suffix}`,
+    bot: `${baseUrl}${botPath}`,
+  };
 }
 
-function generateConfigJs(config: Config): string {
-  return `window.overlayConfig = {
-  host: "${config.host}",
-  port: ${config.port},
-  endpoint: "${config.endpoint}",
-  password: "${config.password}",
-};`;
-}
+async function getStreamerBotConfig(url: string): Promise<string> {
+  let req = await fetch(url);
 
-function downloadConfigJs(content: string) {
-  const blob = new Blob([content], {
-    type: "text/javascript",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `config.js`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  if (!req.ok) {
+    return "Unable to load content";
+  }
+
+  return await req.text();
 }
 
 function copyToClipboard(content: string, button: HTMLElement) {
@@ -85,11 +101,14 @@ function copyToClipboard(content: string, button: HTMLElement) {
   });
 }
 
-function renderResults() {
+async function renderResults() {
   const toolSelect = document.getElementById(
     "tool-select",
   ) as HTMLSelectElement;
   const tool = toolSelect.value;
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+
+  state.info = await getToolInfo(tool, baseUrl);
 
   const hostInput = document.getElementById("host") as HTMLInputElement;
   const portInput = document.getElementById("port") as HTMLInputElement;
@@ -103,38 +122,45 @@ function renderResults() {
     password: passwordInput.value,
   };
 
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
   state.urls = generateUrls(tool, config, baseUrl);
-  state.configJs = generateConfigJs(config);
+  state.botFile = await getStreamerBotConfig(state.urls.bot);
 
-  const botUrlContainer = document.getElementById("sb-actions-url");
-  const dashboardUrlContainer = document.getElementById("dashboard-url");
-  const overlayUrlContainer = document.getElementById("overlay-url");
-  const configContainer = document.getElementById("config-content");
+  const commandsPageAnchor = document.getElementById(
+    "open-commands",
+  )! as HTMLAnchorElement;
 
-  if (botUrlContainer) {
-    botUrlContainer.innerHTML = `
-    <!-- <button><a href="${state.urls.bot}">Open</a></button> -->
-    <button><a href="${state.urls.bot}" download>Download</a></button>
-    `;
+  const botContainer = document.getElementById("sb-content")!;
+  const botDownloadAnchor = document.getElementById(
+    "sb-download",
+  )! as HTMLAnchorElement;
+  const dashboardUrl = document.getElementById("dashboard-url")!;
+  const dashboardUrlContainer = document.getElementById(
+    "dashboard-url-container",
+  )!;
+  const overlayUrl = document.getElementById("overlay-url")!;
+  const overlayUrlContainer = document.getElementById("overlay-url-container")!;
+
+  commandsPageAnchor.href = state.urls.commands;
+
+  botContainer.innerText = state.botFile;
+  botDownloadAnchor.href = state.urls.bot;
+
+  if (state.info?.hasDashboard) {
+    dashboardUrl.innerHTML = `<a href="${state.urls.dashboard}">${state.urls.dashboard || ""}</a>`;
+    dashboardUrlContainer.classList.remove("hidden");
+  } else {
+    dashboardUrlContainer.classList.add("hidden");
   }
 
-  if (dashboardUrlContainer) {
-    dashboardUrlContainer.innerHTML = `<a href="${state.urls.dashboard}">${state.urls.dashboard || ""}</a>`;
+  if (state.info?.hasOverlay) {
+    overlayUrl.innerHTML = `<a href="${state.urls.overlay}">${state.urls.overlay || ""}</a>`;
+    overlayUrlContainer.classList.remove("hidden");
+  } else {
+    overlayUrlContainer.classList.add("hidden");
   }
 
-  if (overlayUrlContainer) {
-    overlayUrlContainer.innerHTML = `<a href="${state.urls.overlay}">${state.urls.overlay || ""}</a>`;
-  }
-
-  if (configContainer) {
-    configContainer.innerText = state.configJs;
-  }
-
-  const resultsSection = document.getElementById("results-section");
-  if (resultsSection) {
-    resultsSection.classList.remove("hidden");
-  }
+  const resultsSection = document.getElementById("results-section")!;
+  resultsSection.classList.remove("hidden");
 
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 }
@@ -163,20 +189,15 @@ function setupEventListeners() {
     }
   });
 
-  const codeCopyBtn = document.getElementById("config-copy");
+  const codeCopyBtn = document.getElementById("sb-copy");
   if (codeCopyBtn) {
     codeCopyBtn.addEventListener("click", (e) => {
       if (!e.target) return;
       const btn = e.target as HTMLElement;
 
-      copyToClipboard(state.configJs || "", btn);
-    });
-  }
-
-  const codeDownloadBtn = document.getElementById("config-download");
-  if (codeDownloadBtn) {
-    codeDownloadBtn.addEventListener("click", (e) => {
-      downloadConfigJs(state.configJs || "");
+      if (state.botFile) {
+        copyToClipboard(state.botFile, btn);
+      }
     });
   }
 }
