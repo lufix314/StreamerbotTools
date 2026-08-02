@@ -1,4 +1,6 @@
 import { Config } from "shared/config";
+import { ToolInfo } from "shared/types";
+import { populateToolSelect, copyToClipboard } from "shared/utils";
 
 declare const DISCOVERED_TOOLS: string[];
 
@@ -7,22 +9,6 @@ interface GeneratedUrls {
   dashboard?: string;
   overlay?: string;
   bot: string;
-}
-
-interface ToolCommand {
-  command: string;
-  description: string;
-}
-
-interface ToolCommands {
-  everyone?: ToolCommand[];
-  moderators?: ToolCommand[];
-}
-
-interface ToolInfo {
-  hasDashboard: boolean;
-  hasOverlay: boolean;
-  commands: ToolCommands;
 }
 
 interface State {
@@ -34,13 +20,19 @@ interface State {
 const state: State = {};
 
 async function getToolInfo(tool: string, baseUrl: string): Promise<ToolInfo> {
-  const req = await fetch(`${baseUrl}/${tool}/info.json`);
+  try {
+    const req = await fetch(`${baseUrl}/${tool}/info.json`);
 
-  if (!req.ok) {
+    if (!req.ok) {
+      console.warn(`Failed to fetch tool info for ${tool}: ${req.status}`);
+      return { hasDashboard: true, hasOverlay: true, commands: {} };
+    }
+
+    return await req.json();
+  } catch (error) {
+    console.error(`Error fetching tool info for ${tool}:`, error);
     return { hasDashboard: true, hasOverlay: true, commands: {} };
   }
-
-  return await req.json();
 }
 
 function generateUrls(
@@ -82,87 +74,149 @@ function generateUrls(
 }
 
 async function getStreamerBotConfig(url: string): Promise<string> {
-  let req = await fetch(url);
+  try {
+    const req = await fetch(url);
 
-  if (!req.ok) {
+    if (!req.ok) {
+      console.warn(`Failed to fetch bot config from ${url}: ${req.status}`);
+      return "Unable to load content";
+    }
+
+    return await req.text();
+  } catch (error) {
+    console.error(`Error fetching bot config from ${url}:`, error);
     return "Unable to load content";
   }
-
-  return await req.text();
-}
-
-function copyToClipboard(content: string, button: HTMLElement) {
-  navigator.clipboard.writeText(content).then(() => {
-    const originalText = button.textContent;
-    button.textContent = "Copied!";
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 1000);
-  });
 }
 
 async function renderResults() {
   const toolSelect = document.getElementById(
     "tool-select",
   ) as HTMLSelectElement;
+
+  if (!toolSelect || !toolSelect.value) {
+    showErrorMessage("Please select a tool first.");
+    return;
+  }
+
   const tool = toolSelect.value;
   const baseUrl = `${window.location.protocol}//${window.location.host}`;
 
-  state.info = await getToolInfo(tool, baseUrl);
+  try {
+    state.info = await getToolInfo(tool, baseUrl);
 
-  const hostInput = document.getElementById("host") as HTMLInputElement;
-  const portInput = document.getElementById("port") as HTMLInputElement;
-  const endpointInput = document.getElementById("endpoint") as HTMLInputElement;
-  const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const hostInput = document.getElementById("host") as HTMLInputElement;
+    const portInput = document.getElementById("port") as HTMLInputElement;
+    const endpointInput = document.getElementById(
+      "endpoint",
+    ) as HTMLInputElement;
+    const passwordInput = document.getElementById(
+      "password",
+    ) as HTMLInputElement;
 
-  const config: Config = {
-    host: hostInput.value,
-    port: parseInt(portInput.value),
-    endpoint: endpointInput.value,
-    password: passwordInput.value,
-  };
+    // Minimal port validation
+    const port = parseInt(portInput.value);
+    if (isNaN(port) || port < 1 || port > 65535) {
+      showErrorMessage("Please enter a valid port number (1-65535).");
+      return;
+    }
 
-  state.urls = generateUrls(tool, config, baseUrl);
-  state.botFile = await getStreamerBotConfig(state.urls.bot);
+    const config: Config = {
+      host: hostInput.value,
+      port: port,
+      endpoint: endpointInput.value,
+      password: passwordInput.value,
+    };
 
-  const commandsPageAnchor = document.getElementById(
-    "open-commands",
-  )! as HTMLAnchorElement;
+    state.urls = generateUrls(tool, config, baseUrl);
+    state.botFile = await getStreamerBotConfig(state.urls.bot);
 
-  const botContainer = document.getElementById("sb-content")!;
-  const botDownloadAnchor = document.getElementById(
-    "sb-download",
-  )! as HTMLAnchorElement;
-  const dashboardUrl = document.getElementById("dashboard-url")!;
-  const dashboardUrlContainer = document.getElementById(
-    "dashboard-url-container",
-  )!;
-  const overlayUrl = document.getElementById("overlay-url")!;
-  const overlayUrlContainer = document.getElementById("overlay-url-container")!;
+    const commandsPageAnchor = document.getElementById(
+      "open-commands",
+    ) as HTMLAnchorElement;
 
-  commandsPageAnchor.href = state.urls.commands;
+    const botContainer = document.getElementById("sb-content")!;
+    const botDownloadAnchor = document.getElementById(
+      "sb-download",
+    ) as HTMLAnchorElement;
+    const dashboardUrl = document.getElementById("dashboard-url")!;
+    const dashboardUrlContainer = document.getElementById(
+      "dashboard-url-container",
+    )!;
+    const overlayUrl = document.getElementById("overlay-url")!;
+    const overlayUrlContainer = document.getElementById(
+      "overlay-url-container",
+    )!;
 
-  botContainer.innerText = state.botFile;
-  botDownloadAnchor.href = state.urls.bot;
+    if (commandsPageAnchor && state.urls) {
+      commandsPageAnchor.href = state.urls.commands;
+    }
 
-  if (state.info?.hasDashboard) {
-    dashboardUrl.innerHTML = `<a href="${state.urls.dashboard}">${state.urls.dashboard || ""}</a>`;
-    dashboardUrlContainer.classList.remove("hidden");
-  } else {
-    dashboardUrlContainer.classList.add("hidden");
+    if (botContainer) {
+      botContainer.innerText = state.botFile || "Unable to load content";
+    }
+    if (botDownloadAnchor && state.urls) {
+      botDownloadAnchor.href = state.urls.bot;
+    }
+
+    if (state.info?.hasDashboard && state.urls?.dashboard) {
+      const link = document.createElement("a");
+      link.href = state.urls.dashboard;
+      link.textContent = state.urls.dashboard;
+      dashboardUrl.innerHTML = "";
+      dashboardUrl.appendChild(link);
+      dashboardUrlContainer.classList.remove("hidden");
+    } else {
+      dashboardUrlContainer.classList.add("hidden");
+    }
+
+    if (state.info?.hasOverlay && state.urls?.overlay) {
+      const link = document.createElement("a");
+      link.href = state.urls.overlay;
+      link.textContent = state.urls.overlay;
+      overlayUrl.innerHTML = "";
+      overlayUrl.appendChild(link);
+      overlayUrlContainer.classList.remove("hidden");
+    } else {
+      overlayUrlContainer.classList.add("hidden");
+    }
+
+    const resultsSection = document.getElementById("results-section")!;
+    resultsSection.classList.remove("hidden");
+
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  } catch (error) {
+    console.error("Error rendering results:", error);
+    showErrorMessage(
+      "An error occurred while generating the setup. Please check the console for details.",
+    );
+  }
+}
+
+function showErrorMessage(message: string) {
+  const resultsSection = document.getElementById("results-section");
+  if (resultsSection) {
+    resultsSection.classList.add("hidden");
   }
 
-  if (state.info?.hasOverlay) {
-    overlayUrl.innerHTML = `<a href="${state.urls.overlay}">${state.urls.overlay || ""}</a>`;
-    overlayUrlContainer.classList.remove("hidden");
-  } else {
-    overlayUrlContainer.classList.add("hidden");
+  const existingError = document.getElementById("error-message");
+  if (existingError) {
+    existingError.remove();
   }
 
-  const resultsSection = document.getElementById("results-section")!;
-  resultsSection.classList.remove("hidden");
+  const errorDiv = document.createElement("div");
+  errorDiv.id = "error-message";
+  errorDiv.className = "error-message";
+  errorDiv.textContent = message;
 
-  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  const main = document.querySelector("main");
+  if (main) {
+    main.insertBefore(errorDiv, main.firstChild);
+  }
+
+  setTimeout(() => {
+    errorDiv.remove();
+  }, 5000);
 }
 
 function setupEventListeners() {
@@ -202,22 +256,7 @@ function setupEventListeners() {
   }
 }
 
-function populateToolSelect() {
-  const select = document.getElementById("tool-select") as HTMLSelectElement;
-  if (!select) return;
-
-  select.innerHTML = "";
-  DISCOVERED_TOOLS.forEach((tool) => {
-    const option = document.createElement("option");
-    option.value = tool;
-    option.textContent = tool
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-    select.appendChild(option);
-  });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  populateToolSelect();
+  populateToolSelect("tool-select", DISCOVERED_TOOLS);
   setupEventListeners();
 });
