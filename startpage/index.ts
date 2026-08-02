@@ -55,14 +55,14 @@ function generateUrls(
     params.set("password", config.password);
   }
 
-  const commandsUrl = new URL(`${baseUrl}/commands.html`);
+  const commandsUrl = new URL(`${baseUrl}/commands`);
   commandsUrl.searchParams.append("tool", tool);
 
   const paramString = params.toString();
   const suffix = paramString ? `?${paramString}` : "";
 
-  const dashboardPath = `/${tool}/dashboard.html`;
-  const overlayPath = `/${tool}/overlay.html`;
+  const dashboardPath = `/${tool}/dashboard`;
+  const overlayPath = `/${tool}/overlay`;
   const botPath = `/${tool}/bot.sb`;
 
   return {
@@ -100,7 +100,10 @@ async function renderResults() {
   }
 
   const tool = toolSelect.value;
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  const baseUrl = `${window.location.origin}${window.location.pathname
+    .replace("/index.html", "")
+    .replace("/index", "")
+    .replace("/", "")}`;
 
   try {
     state.info = await getToolInfo(tool, baseUrl);

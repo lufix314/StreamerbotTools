@@ -58,7 +58,9 @@ async function renderCommands() {
   }
 
   const tool = toolSelect.value;
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  const baseUrl = `${window.location.origin}${window.location.pathname
+    .replace("/commands.html", "")
+    .replace("/commands", "")}`;
 
   try {
     state.info = await getToolInfo(tool, baseUrl);
