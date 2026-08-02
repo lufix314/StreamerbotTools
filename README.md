@@ -27,9 +27,9 @@ _If a dashboard exists:_
 
 Display a live queue of viewers waiting to play with you. Perfect for gaming streams where you interact with viewers one-on-one.
 
-### [Points System](/tools/points/README.md)
+### [Quotes](/tools/quotes/README.md)
 
-Basic points system, that awards present viewers.
+Manage stream quotes and optionally link them to a twitch clip and display them on stream.
 
 ## Prerequisites
 
@@ -85,7 +85,7 @@ The available options are listed in the tool's `README.md`.
 > [!WARNING]
 > When you use URL parameters, they are included in the HTTP request to the GitHub server, even though all page processing happens locally in the browser/OBS. This means your WebSocket password (if set) might be visible to third parties (GitHub).
 
-#### Option B: Local File (Recommended)
+#### Option B: Local File (Stable)
 
 1. In OBS, add a new **Browser Source**
 2. Set the Source to **Local file**
@@ -143,7 +143,7 @@ The available options are listed in the tool's `README.md`.
 > [!WARNING]
 > When you use URL parameters, they are included in the HTTP request to the GitHub server, even though all page processing happens locally in the browser/OBS. This means your WebSocket password (if set) might be visible to third parties (GitHub).
 
-#### Option B: Local File (Recommended)
+#### Option B: Local File (Stable)
 
 1. Open the `dashboard.html` from the extracted tool folder in a browser of your choice
 

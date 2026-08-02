@@ -2,7 +2,7 @@ import type {
   StreamerbotClient,
   StreamerbotEventPayload,
 } from "@streamerbot/client";
-import { getClient, doAction } from "shared/client.js";
+import { getClient, doAction } from "shared/client";
 
 /** Viewer in the queue */
 interface QueueViewer {
@@ -27,31 +27,44 @@ const ACTION_NAMES = {
   SET_LIVE: "Set Live",
   ROTATE_PLAYER: "Rotate Player",
   NEXT_PLAYER: "Next Player",
+  OPEN_QUEUE: "Open Queue",
+  CLOSE_QUEUE: "Close Queue",
+  CLEAR_QUEUE: "Clear Queue",
+  SET_QUEUE_MESSAGE: "Set Queue Message",
+  KICK_FROM_QUEUE: "Kick from Queue"
 } as const;
 
 /** names of streamerbot variables */
 const VARIABLE_NAMES = {
-  VIEWER_QUEUE: "viewerQueue",
+  QUEUE: "viewerQueue",
   VIEWER_LIVE: "viewerLive",
+  STATE: "viewerQueueOpen",
+  QUEUE_MSG: "viewerQueueMsg",
 } as const;
 
 /** IDs of different HTML elements used in the dashboard */
 const ELEMENT_IDS = {
   QUEUE_LIST: "queue-list",
   VIEWER_LIVE: "viewer-live",
-  SAVE_LIVE_BTN: "save-live-btn",
+  SAVE_SETTINGS_BTN: "save-settings-btn",
   ROTATE_BTN: "rotate-btn",
   ROTATE_COUNT: "rotate-count",
   NEXT_BTN: "next-btn",
   NEXT_COUNT: "next-count",
+  QUEUE_OPEN_TOGGLE: "queue-open-toggle",
+  CLEAR_QUEUE_BTN: "clear-queue-btn",
+  QUEUE_MSG: "queue-msg",
 } as const;
 
 /** Create an item in the queue list */
 function createQueueItem(viewer: QueueViewer, index: number): HTMLElement {
   const li = document.createElement("li");
-  li.className = "queue-item";
-  li.draggable = true;
-  li.dataset.index = index.toString();
+  li.className = "queue-container";
+
+  const itemDiv = document.createElement("div");
+  itemDiv.className = "queue-item";
+  itemDiv.draggable = true;
+  itemDiv.dataset.index = index.toString();
 
   const infoDiv = document.createElement("div");
   infoDiv.className = "queue-item-info";
@@ -66,14 +79,27 @@ function createQueueItem(viewer: QueueViewer, index: number): HTMLElement {
 
   infoDiv.appendChild(indexSpan);
   infoDiv.appendChild(nameSpan);
-  li.appendChild(infoDiv);
+
+  itemDiv.appendChild(infoDiv)
+
+  // const actionsDiv = document.createElement("div");
+  // actionsDiv.className = "queue-item-actions";
 
   if (viewer.live) {
     const badge = document.createElement("span");
     badge.className = "live-badge";
     badge.textContent = "LIVE";
-    li.appendChild(badge);
+    itemDiv.appendChild(badge);
   }
+
+  li.appendChild(itemDiv);
+
+  const kickBtn = document.createElement("button");
+  kickBtn.className = "kick-btn";
+  kickBtn.setAttribute("aria-label", "Remove from queue");
+  kickBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  kickBtn.addEventListener("click", () => kickFromQueue(viewer.name, index));
+  li.appendChild(kickBtn);
 
   return li;
 }
@@ -186,27 +212,67 @@ async function saveQueue() {
   }
 }
 
-function setViewerLive(value: string) {
-  const valueNum = parseInt(value, 10);
+async function kickFromQueue(viewerName: string, index: number) {
+  try {
+    await doAction(client, ACTION_NAMES.KICK_FROM_QUEUE, {
+      input0: viewerName,
+    });
+    state.queue.splice(index, 1);
+    saveQueue();
+  } catch (err) {
+    console.error("Failed to kick viewer:", err);
+  }
+}
+
+function setViewerLive(value: number) {
   const input = document.getElementById(
     ELEMENT_IDS.VIEWER_LIVE,
   ) as HTMLInputElement;
 
-  if (!isNaN(valueNum)) {
-    input.value = value;
-  }
+  input.value = value.toString();
+}
+
+function setQueueOpen(value: boolean) {
+  const input = document.getElementById(
+    ELEMENT_IDS.QUEUE_OPEN_TOGGLE,
+  ) as HTMLInputElement;
+
+  input.checked = value;
 }
 
 /** Setup event listeners like button presses and trigger the corresponding action*/
 function setupEventListeners() {
-  // Set the number of live viewers
-  const saveLiveBtn = document.getElementById(ELEMENT_IDS.SAVE_LIVE_BTN);
-  if (saveLiveBtn) {
-    saveLiveBtn.addEventListener("click", () => {
-      const input = document.getElementById(
+  // Save all settings
+  const saveSettingsBtn = document.getElementById(
+    ELEMENT_IDS.SAVE_SETTINGS_BTN,
+  );
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener("click", () => {
+      const liveInput = document.getElementById(
         ELEMENT_IDS.VIEWER_LIVE,
       ) as HTMLInputElement;
-      doAction(client, ACTION_NAMES.SET_LIVE, { input0: input.value });
+      doAction(client, ACTION_NAMES.SET_LIVE, { input0: liveInput.value });
+
+      const msgInput = document.getElementById(
+        ELEMENT_IDS.QUEUE_MSG,
+      ) as HTMLTextAreaElement;
+      doAction(client, ACTION_NAMES.SET_QUEUE_MESSAGE, {
+        input0: msgInput.value,
+      });
+    });
+  }
+
+  // Toggle queue open/close (instant)
+  const queueOpenToggle = document.getElementById(
+    ELEMENT_IDS.QUEUE_OPEN_TOGGLE,
+  ) as HTMLInputElement;
+  if (queueOpenToggle) {
+    queueOpenToggle.addEventListener("change", () => {
+      if (queueOpenToggle.checked) {
+        doAction(client, ACTION_NAMES.OPEN_QUEUE, {});
+      } else {
+        doAction(client, ACTION_NAMES.CLOSE_QUEUE, {});
+      }
     });
   }
 
@@ -231,22 +297,61 @@ function setupEventListeners() {
       doAction(client, ACTION_NAMES.NEXT_PLAYER, { input0: input.value });
     });
   }
+
+  // Clear queue
+  const clearQueueBtn = document.getElementById(ELEMENT_IDS.CLEAR_QUEUE_BTN);
+  if (clearQueueBtn) {
+    clearQueueBtn.addEventListener("click", () => {
+      doAction(client, ACTION_NAMES.CLEAR_QUEUE, {});
+    });
+  }
 }
 
 async function fetchViewerLive(client: StreamerbotClient) {
   try {
     const resp = await client.getGlobal(VARIABLE_NAMES.VIEWER_LIVE);
     if (resp?.status === "ok" && resp.variable) {
-      setViewerLive(resp.variable.value?.toString() || "1");
+      setViewerLive((resp.variable.value?.valueOf() as number) || 0);
     }
   } catch (err) {
-    console.error(`getGlobal ${VARIABLE_NAMES.VIEWER_LIVE} error:`, err);
+    setViewerLive(0);
+  }
+}
+
+async function fetchQueueOpen(client: StreamerbotClient) {
+  try {
+    const resp = await client.getGlobal(VARIABLE_NAMES.STATE);
+    if (resp?.status === "ok" && resp.variable) {
+      setQueueOpen((resp.variable.value?.valueOf() as boolean) || false);
+    }
+  } catch (err) {
+    setQueueOpen(false);
+  }
+}
+
+async function fetchQueueMsg(client: StreamerbotClient) {
+  try {
+    const resp = await client.getGlobal(VARIABLE_NAMES.QUEUE_MSG);
+    if (resp?.status === "ok" && resp.variable) {
+      setQueueMsg(resp.variable.value?.toString() || "");
+    }
+  } catch (err) {
+    console.error(`getGlobal ${VARIABLE_NAMES.QUEUE_MSG} error:`, err);
+  }
+}
+
+function setQueueMsg(value: string) {
+  const input = document.getElementById(
+    ELEMENT_IDS.QUEUE_MSG,
+  ) as HTMLTextAreaElement;
+  if (input) {
+    input.value = value;
   }
 }
 
 async function fetchQueue(client: StreamerbotClient) {
   try {
-    const resp = await client.getGlobal(VARIABLE_NAMES.VIEWER_QUEUE);
+    const resp = await client.getGlobal(VARIABLE_NAMES.QUEUE);
     if (resp?.status === "ok" && resp.variable) {
       const jsonStr = resp.variable.value?.toString() || "[]";
       state.queue = JSON.parse(jsonStr);
@@ -257,7 +362,7 @@ async function fetchQueue(client: StreamerbotClient) {
       state.queue = [];
     }
   } catch (err) {
-    console.error(`getGlobal ${VARIABLE_NAMES.VIEWER_QUEUE} error:`, err);
+    console.error(`getGlobal ${VARIABLE_NAMES.QUEUE} error:`, err);
     state.queue = [];
   }
   renderQueue();
@@ -281,17 +386,23 @@ function handleGlobalVariableUpdated(
 
   const { name, newValue } = data;
 
-  if (name === VARIABLE_NAMES.VIEWER_QUEUE) {
+  if (name === VARIABLE_NAMES.QUEUE) {
     state.queue = parseQueue(newValue);
     renderQueue();
   } else if (name === VARIABLE_NAMES.VIEWER_LIVE) {
     setViewerLive(newValue);
+  } else if (name === VARIABLE_NAMES.STATE) {
+    setQueueOpen(newValue);
+  } else if (name === VARIABLE_NAMES.QUEUE_MSG) {
+    setQueueMsg(newValue);
   }
 }
 
 const client = getClient((c) => {
   fetchQueue(c);
   fetchViewerLive(c);
+  fetchQueueOpen(c);
+  fetchQueueMsg(c);
 });
 
 client.on("Misc.GlobalVariableUpdated", handleGlobalVariableUpdated);
