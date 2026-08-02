@@ -101,9 +101,9 @@ async function renderResults() {
 
   const tool = toolSelect.value;
   const baseUrl = `${window.location.origin}${window.location.pathname
-    .replace("/index.html", "")
-    .replace("/index", "")
-    .replace("/", "")}`;
+    .replace(/\/index.html$/, "")
+    .replace(/\/index$/, "")
+    .replace(/\/$/, "")}`;
 
   try {
     state.info = await getToolInfo(tool, baseUrl);

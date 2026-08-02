@@ -4,12 +4,13 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.js",
-    "dev": "node esbuild.config.js watch & python -m http.server 3000 -d build",
+    "dev": "node esbuild.config.js watch & http-server build",
     "clean": "rm -rf build/*"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",
     "esbuild-plugin-alias": "^0.2.1",
+    "http-server": "^14.1.1",
     "typescript": "^5.0.0"
   },
   "dependencies": {
