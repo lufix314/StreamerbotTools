@@ -32,7 +32,7 @@ async function getToolInfo(tool: string, baseUrl: string): Promise<ToolInfo> {
 
 function renderCommandsTable(
   tbody: HTMLTableSectionElement,
-  commands: ToolCommand[]
+  commands: ToolCommand[],
 ) {
   tbody.innerHTML = "";
   commands.forEach((cmd) => {
@@ -50,7 +50,9 @@ function renderCommandsTable(
 }
 
 async function renderCommands() {
-  const toolSelect = document.getElementById("tool-select") as HTMLSelectElement;
+  const toolSelect = document.getElementById(
+    "tool-select",
+  ) as HTMLSelectElement;
   if (!toolSelect || !toolSelect.value) {
     return;
   }
@@ -62,22 +64,25 @@ async function renderCommands() {
     state.info = await getToolInfo(tool, baseUrl);
 
     const everyoneSection = document.getElementById(
-      "everyone-commands-section"
+      "everyone-commands-section",
     ) as HTMLDivElement;
     const moderatorSection = document.getElementById(
-      "moderator-commands-section"
+      "moderator-commands-section",
     ) as HTMLDivElement;
     const noCommands = document.getElementById("no-commands") as HTMLDivElement;
 
     const everyoneTbody = document.querySelector(
-      "#everyone-table tbody"
+      "#everyone-table tbody",
     ) as HTMLTableSectionElement;
     const moderatorTbody = document.querySelector(
-      "#moderator-table tbody"
+      "#moderator-table tbody",
     ) as HTMLTableSectionElement;
 
-    const hasEveryone = state.info?.commands.everyone && state.info.commands.everyone.length > 0;
-    const hasModerators = state.info?.commands.moderators && state.info.commands.moderators.length > 0;
+    const hasEveryone =
+      state.info?.commands.everyone && state.info.commands.everyone.length > 0;
+    const hasModerators =
+      state.info?.commands.moderators &&
+      state.info.commands.moderators.length > 0;
 
     if (hasEveryone && everyoneTbody && everyoneSection) {
       renderCommandsTable(everyoneTbody, state.info.commands.everyone!);
@@ -109,10 +114,22 @@ async function renderCommands() {
   }
 }
 
+function updateUrlTool(tool: string) {
+  const params = new URLSearchParams(window.location.search);
+  params.set("tool", tool);
+  const newUrl = `${window.location.pathname}?${params.toString()}`;
+  history.pushState({}, "", newUrl);
+}
+
 function setupEventListeners() {
-  const toolSelect = document.getElementById("tool-select") as HTMLSelectElement;
+  const toolSelect = document.getElementById(
+    "tool-select",
+  ) as HTMLSelectElement;
   if (toolSelect) {
     toolSelect.addEventListener("change", () => {
+      if (toolSelect.value) {
+        updateUrlTool(toolSelect.value);
+      }
       renderCommands();
     });
   }
@@ -120,13 +137,22 @@ function setupEventListeners() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const urlTool = getToolFromUrlParams();
-  populateToolSelect("tool-select", DISCOVERED_TOOLS, urlTool || undefined);
+  const selectedTool =
+    urlTool && DISCOVERED_TOOLS.includes(urlTool)
+      ? urlTool
+      : DISCOVERED_TOOLS[0];
 
-  if (urlTool && DISCOVERED_TOOLS.includes(urlTool)) {
-    const toolSelect = document.getElementById("tool-select") as HTMLSelectElement;
-    if (toolSelect) {
-      toolSelect.value = urlTool;
-      await renderCommands();
+  populateToolSelect("tool-select", DISCOVERED_TOOLS, selectedTool);
+
+  const toolSelect = document.getElementById(
+    "tool-select",
+  ) as HTMLSelectElement;
+  if (toolSelect && selectedTool) {
+    toolSelect.value = selectedTool;
+    await renderCommands();
+
+    if (!urlTool) {
+      updateUrlTool(selectedTool);
     }
   }
 

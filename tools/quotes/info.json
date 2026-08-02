@@ -1,0 +1,22 @@
+{
+  "hasDashboard": true,
+  "hasOverlay": true,
+  "commands": {
+    "everyone": [
+      {
+        "command": "!quote",
+        "description": "Display a random quote (And show the clip on stream)"
+      }
+    ],
+    "moderators": [
+      {
+        "command": "!addQuote \"{quote}\" {author} ?{clip id/clip link}",
+        "description": "Adds the given quote. If a clip ID or link is given this clip is linked to the quote"
+      },
+      {
+        "command": "!removeQuote {index}",
+        "description": "Removes quote with the given index (for example the 9th quote has the index 8)"
+      }
+    ]
+  }
+}
