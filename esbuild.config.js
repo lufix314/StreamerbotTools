@@ -9,9 +9,11 @@ const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 const TOOLS_DIR = join(ROOT_DIR, "tools");
 const BUILD_DIR = join(ROOT_DIR, "build");
 
-const CDN_SCRIPT = `  <script src="https://cdn.jsdelivr.net/npm/@streamerbot/client/dist/streamerbot-client.js"></script>\n`;
+const packageJson = JSON.parse(await readFile(join(ROOT_DIR, "package.json"), "utf-8"));
+const CDN_VERSION = packageJson.dependencies["@streamerbot/client"].replace(/^[~^>=<]+/, "");
+const CDN_SCRIPT = `  <script src="https://cdn.jsdelivr.net/npm/@streamerbot/client@${CDN_VERSION}/dist/streamerbot-client.js"></script>\n`;
 
-const IGNORED_ASSETS = ["ts", "html", "cs"];
+const IGNORED_ASSETS = ["ts", "html", "cs", "json", "md"];
 
 async function getTools() {
   const tools = await readdir(TOOLS_DIR, { withFileTypes: true });
@@ -98,15 +100,25 @@ async function getBuildConfig(toolName, shared, watch = false) {
 }
 
 async function copyHtmlWithConfig(toolName, outDir, htmlPaths) {
-  htmlPaths.forEach(async (htmlPath) => {
-    let fileName = basename(htmlPath);
+  await Promise.all(
+    htmlPaths.map(async (htmlPath) => {
+      let fileName = basename(htmlPath);
 
-    let htmlContent = await readFile(htmlPath, "utf-8");
-    htmlContent = htmlContent.replace(/(<\/head>)/, `${CDN_SCRIPT}$1`);
+      let htmlContent = await readFile(htmlPath, "utf-8");
+      htmlContent = htmlContent.replace(/(<\/head>)/, `${CDN_SCRIPT}$1`);
 
-    await writeFile(join(outDir, fileName), htmlContent);
-    console.log(`Copied and updated ${fileName} for ${toolName}`);
-  });
+      await writeFile(join(outDir, fileName), htmlContent);
+      console.log(`Copied and updated ${fileName} for ${toolName}`);
+    }),
+  );
+}
+
+async function copySharedCss(outDir) {
+  const sharedCssPath = join(ROOT_DIR, "shared", "shared.css");
+  if (existsSync(sharedCssPath)) {
+    await copyFile(sharedCssPath, join(outDir, "shared.css"));
+    console.log(`Copied shared.css to ${basename(outDir)}`);
+  }
 }
 
 async function copyAssets(toolDir, outDir) {
@@ -155,6 +167,7 @@ async function buildAll() {
       });
 
       await copyHtmlWithConfig(toolName, outDir, htmlPaths);
+      await copySharedCss(outDir);
       await copyAssets(toolDir, outDir);
       console.log(`Built: ${toolName}`);
       console.log();
@@ -178,6 +191,7 @@ async function buildAll() {
     entryPoints: [startpageIndex, commandsIndexPath],
   });
   await copyStartpageHtml(tools, BUILD_DIR, startpageHtml, commandsHtmlPath);
+  await copySharedCss(BUILD_DIR);
 
   console.log("Built: Startpage");
 }
@@ -213,6 +227,7 @@ async function watchAll() {
               setup(build) {
                 build.onEnd(async () => {
                   await copyHtmlWithConfig(toolName, outDir, htmlPaths);
+                  await copySharedCss(outDir);
                   await copyAssets(toolDir, outDir);
                 });
               },
@@ -247,6 +262,7 @@ async function watchAll() {
                 startpageHtml,
                 commandsHtmlPath,
               );
+              await copySharedCss(BUILD_DIR);
             });
           },
         },

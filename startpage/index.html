@@ -4,178 +4,14 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Streamer.bot Tools</title>
+        <link rel="stylesheet" href="shared.css" />
         <style>
-            :root {
-                --bg-color: #ffffff;
-                --text-color: #1a1a1a;
-                --card-bg: #f5f5f5;
-                --border-color: #e0e0e0;
-                --accent-color: #9147ff;
-                --accent-hover: #7c38e0;
-                --danger-color: #e04040;
-                --success-color: #40c040;
-                --drag-bg: #e8e0ff;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                :root {
-                    --bg-color: #1a1a1a;
-                    --text-color: #f0f0f0;
-                    --card-bg: #2a2a2a;
-                    --border-color: #404040;
-                    --accent-color: #a863ff;
-                    --accent-hover: #b873ff;
-                    --danger-color: #ff6060;
-                    --success-color: #60ff60;
-                    --drag-bg: #3a3050;
-                }
-            }
-
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family: "Segoe UI", Roboto, sans-serif;
-                background: var(--bg-color);
-                color: var(--text-color);
-                padding: 20px;
-                min-height: 100vh;
-            }
-
-            h1,
-            h2 {
-                font-weight: 600;
-            }
-
-            h1 {
-                font-size: 24pt;
-                margin-bottom: 20px;
-            }
-
-            h2 {
-                font-size: 18pt;
-                margin-bottom: 12px;
-            }
-
-            h3 {
-                font-size: 14pt;
-                margin-bottom: 8px;
-                font-weight: 500;
-            }
-
-            .hint {
-                font-size: 12pt;
-                font-weight: 200;
-                opacity: 0.8;
-                vertical-align: center;
-            }
-
-            .header {
-                display: flex;
-                justify-content: space-between;
-            }
-
-            .header button {
-                padding: 4px 16px;
-                margin-bottom: 8px;
-            }
-
-            a {
-                color: var(--text-color);
-            }
-
-            main {
-                max-width: 800px;
-                margin: 0 auto;
-            }
-
-            section {
-                background: var(--card-bg);
-                border-radius: 8px;
-                padding: 16px;
-                margin: 16px 0px;
-                border: 1px solid var(--border-color);
-            }
-
-            label {
-                padding: 8px 4px;
-                font-size: 12pt;
-            }
-
-            input[type="text"],
-            input[type="number"],
-            input[type="password"],
-            select {
-                padding: 8px 12px;
-                border: 1px solid var(--border-color);
-                border-radius: 4px;
-                background: var(--bg-color);
-                color: var(--text-color);
-                font-size: 14px;
-                width: 100%;
-                max-width: 300px;
-            }
-
-            input:focus,
-            select:focus {
-                outline: 2px solid var(--accent-color);
-                border-color: transparent;
-            }
-
-            .input-row {
-                display: flex;
-                gap: 16px;
-                margin-bottom: 12px;
-            }
-
-            .input-group {
-                display: flex;
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .input-group input,
-            .input-group select {
-                min-width: 100%;
-            }
-
-            button {
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-                background: var(--accent-color);
-                color: white;
-                font-size: 14px;
-                cursor: pointer;
-                transition: background 0.2s;
-            }
-
-            button:hover:not(:disabled) {
-                background: var(--accent-hover);
-            }
-
-            button:focus {
-                outline: 2px solid var(--accent-color);
-                outline-offset: 2px;
-            }
-
-            button a {
-                text-decoration: none;
-            }
-
             #generate-btn {
                 display: block;
                 margin-left: auto;
                 margin-right: auto;
                 width: 100%;
                 max-width: 300px;
-            }
-
-            .hidden {
-                display: none !important;
             }
 
             .result-item {
@@ -234,25 +70,6 @@
                 display: flex;
                 gap: 12px;
                 margin-top: 8px;
-            }
-
-            .error-message {
-                background: var(--danger-color);
-                color: white;
-                padding: 12px 16px;
-                border-radius: 8px;
-                margin: 16px 0;
-            }
-
-            @media (max-width: 600px) {
-                body {
-                    padding: 12px;
-                }
-
-                .input-row {
-                    flex-direction: column;
-                    gap: 12px;
-                }
             }
         </style>
     </head>
