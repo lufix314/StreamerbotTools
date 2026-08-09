@@ -6,20 +6,13 @@ Each tool is available as a standalone ZIP in the [Releases](https://github.com/
 
 ## Quick Start
 
-1. **Download** a tool from the [Releases](https://github.com/lufix314/StreamerbotTools/releases) page
-2. **Extract** the ZIP file to a folder on your computer
-3. **Import** the `.sb` file into Streamer.bot
+1. Go to [lufix314.github.io/StreamerbotTools](https://lufix314.github.io/StreamerbotTools)
+2. Select the Tool you want to install
+3. Enter the WebSocket configuration of your Streamer.bot instance (Keep the defaults if you are unsure)
+4. **Generate Setup** and follow the instructions on the page for each resource.
 
-_If an overlay exists:_
-
-1. **Enable** the WebSocket server of your Streamer.bot
-2. **Add** the `overlay.html` as a Browser Source in OBS (either as local file or with URL)
-3. **Configure** the overlay as needed using `config.js` (for local file) or URL parameters (for remote)
-
-_If a dashboard exists:_
-
-1. **Enable** the WebSocket server of your Streamer.bot
-2. **Open** the `overlay.html` in a Browser of your choice (either as local file or with URL)
+> [!NOTE]
+> Make sure, you enabled the WebSocket Server in Streamer.bot (See [Setup](#Setup) for more details)
 
 ## Available Tools
 
@@ -31,14 +24,14 @@ Display a live queue of viewers waiting to play with you. Perfect for gaming str
 
 Manage stream quotes and optionally link them to a twitch clip and display them on stream.
 
-## Prerequisites
+## Setup
+
+### Prerequisites
 
 Before using any tool, make sure you have:
 
 - [Streamer.bot](https://streamer.bot) installed and running
 - OBS Studio or any streaming software with support for browser sources (This documentation expects you to use OBS)
-
-## Setup
 
 ### Step 1: Enable WebSocket Server in Streamer.bot
 
@@ -161,3 +154,7 @@ window.overlayConfig = {
 ## Using Multiple Tools
 
 You can use multiple tools simultaneously. Simply set up each tool separately and display the overlays as needed.
+
+## Contributing
+
+If you have any suggestions for new features or tools feel free to open an issue or a pull request. See [CONTRIBUTIING.md](CONTRIBUTING.md) for a overview of the project structure and information on how to add a new tool.
