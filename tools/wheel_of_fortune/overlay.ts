@@ -5,13 +5,39 @@ interface WheelEntry {
   multiplier: number;
 }
 
+interface ExtendedWheelEntry extends WheelEntry {
+  adjustedMultiplier: number;
+}
+
 interface SpinPayload {
   idx: number;
   name: string;
   time: number;
 }
 
+interface State {
+  entries: WheelEntry[];
+  rawEntries: ExtendedWheelEntry[];
+  shouldAdjustMultiplier: boolean;
+  totalMultiplier: number;
+  // currentRotation: number;
+  isSpinning: boolean;
+  isVisible: boolean;
+}
+
+const state: State = {
+  entries: [],
+  rawEntries: [],
+  shouldAdjustMultiplier: false,
+  totalMultiplier: 0,
+  // currentRotation: 0,
+  isSpinning: false,
+  isVisible: false,
+};
+
 const SPIN_EVENT = "SpinTheWheel";
+const ADJUST_PROBS_VAR = "wofAdjustProbs";
+
 const ENTRIES_VAR = "wofEntries";
 const COLORS = [
   "--color-1",
@@ -24,12 +50,9 @@ const COLORS = [
   "--color-8",
 ];
 
-let entries: WheelEntry[] = [];
-let totalMultiplier = 0;
-let currentRotation = 0;
-let isSpinning = false;
-
 const FADE_DURATION = 1000;
+
+let onHidden = () => {};
 
 function getFadeOutDelay(): number {
   const styles = getComputedStyle(document.documentElement);
@@ -48,6 +71,9 @@ function fadeIn(): Promise<void> {
       resolve();
       return;
     }
+
+    state.isVisible = true;
+
     container.classList.remove("fade-out");
     container.classList.add("fade-in");
     setTimeout(resolve, FADE_DURATION);
@@ -59,6 +85,11 @@ function fadeOut(): void {
   if (!container) return;
   container.classList.remove("fade-in");
   container.classList.add("fade-out");
+
+  setTimeout(() => {
+    onHidden();
+    onHidden = () => {};
+  }, FADE_DURATION);
 }
 
 function showResult(name: string): void {
@@ -88,7 +119,7 @@ function initCanvas() {
   return canvas;
 }
 
-function parseEntries(jsonStr: string): WheelEntry[] {
+function parseEntries(jsonStr: string): ExtendedWheelEntry[] {
   if (jsonStr.trim() === "") {
     return [];
   }
@@ -119,7 +150,8 @@ function calculateSegmentAngles(
   let currentAngle = -Math.PI / 2;
 
   for (const entry of entries) {
-    const angle = (entry.multiplier / totalMultiplier) * 2 * Math.PI;
+    const value = entry.multiplier;
+    const angle = (value / totalMultiplier) * 2 * Math.PI;
     segments.push({
       startAngle: currentAngle,
       endAngle: currentAngle + angle,
@@ -145,11 +177,11 @@ function drawWheel(
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (entries.length === 0) {
+  if (state.entries.length === 0) {
     return;
   }
 
-  const segments = calculateSegmentAngles(entries, totalMultiplier);
+  const segments = calculateSegmentAngles(state.entries, state.totalMultiplier);
 
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -198,10 +230,10 @@ function animateSpin(
   duration: number,
   onComplete: () => void,
 ) {
-  if (isSpinning) return;
-  isSpinning = true;
+  if (state.isSpinning) return;
+  state.isSpinning = true;
 
-  const startRotation = currentRotation;
+  const startRotation = 0; // state.currentRotation;
   const rotationDiff = targetRotation - startRotation;
   const startTime = performance.now();
 
@@ -213,7 +245,7 @@ function animateSpin(
     const progress = Math.min(elapsed / duration, 1);
     const easedProgress = easeOutCubic(progress);
 
-    currentRotation = startRotation + rotationDiff * easedProgress;
+    const currentRotation = startRotation + rotationDiff * easedProgress;
 
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -225,8 +257,8 @@ function animateSpin(
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      currentRotation = targetRotation % (2 * Math.PI);
-      isSpinning = false;
+      // state.currentRotation = targetRotation % (2 * Math.PI);
+      state.isSpinning = false;
       onComplete();
     }
   }
@@ -235,27 +267,27 @@ function animateSpin(
 }
 
 function getTargetRotation(targetIndex: number): number {
-  if (entries.length === 0) return currentRotation;
+  if (state.entries.length === 0) return 0; // state.currentRotation;
 
-  const segments = calculateSegmentAngles(entries, totalMultiplier);
+  const segments = calculateSegmentAngles(state.entries, state.totalMultiplier);
   const targetSegment = segments[targetIndex];
 
   const segmentCenter =
     targetSegment.startAngle +
     Math.random() * (targetSegment.endAngle - targetSegment.startAngle);
 
-  let currentRotationNormalized = currentRotation % (2 * Math.PI);
-  if (currentRotationNormalized < 0) {
-    currentRotationNormalized += 2 * Math.PI;
-  }
+  // let currentRotationNormalized = state.currentRotation % (2 * Math.PI);
+  // if (currentRotationNormalized < 0) {
+  //   currentRotationNormalized += 2 * Math.PI;
+  // }
 
   const fullRotations = Math.ceil(3 + Math.random() * 2);
   const baseRotation = fullRotations * 2 * Math.PI;
 
-  const rotationToTarget = baseRotation - currentRotationNormalized;
+  const rotationToTarget = baseRotation; // - currentRotationNormalized;
   const targetAngle = -segmentCenter;
 
-  return currentRotation + rotationToTarget + targetAngle;
+  return rotationToTarget + targetAngle; // + state.currentRotation;
 }
 
 async function handleSpinEvent(eventData: any) {
@@ -285,13 +317,30 @@ async function handleSpinEvent(eventData: any) {
   });
 }
 
-function updateEntries(jsonStr: string) {
-  entries = parseEntries(jsonStr);
-  totalMultiplier = entries.reduce((sum, e) => sum + e.multiplier, 0);
+function updateEntries() {
+  state.entries = state.rawEntries.map((e) => ({
+    name: e.name,
+    multiplier: state.shouldAdjustMultiplier
+      ? e.adjustedMultiplier
+      : e.multiplier,
+  }));
+  state.totalMultiplier = state.entries.reduce(
+    (sum, e) => sum + e.multiplier,
+    0,
+  );
 
-  const canvas = initCanvas();
-  const ctx = canvas.getContext("2d")!;
-  drawWheel(ctx, canvas);
+  const redraw = () => {
+    const canvas = initCanvas();
+    const ctx = canvas.getContext("2d")!;
+    drawWheel(ctx, canvas);
+  };
+
+  if (state.isVisible) {
+    // Queue redraw after current spin is finished
+    onHidden = redraw;
+  } else {
+    redraw();
+  }
 }
 
 const client = getClient(() => {
@@ -299,23 +348,36 @@ const client = getClient(() => {
   document.getElementById("no-connection")?.remove();
 
   client
-    .getGlobal(ENTRIES_VAR)
+    .getGlobals()
     .then((resp) => {
-      if (resp && resp.status === "ok" && resp.variable) {
-        updateEntries(resp.variable.value?.toString() || "[]");
-      } else {
-        updateEntries("[]");
+      if (resp && resp.status === "ok") {
+        state.rawEntries = parseEntries(
+          resp.variables[ENTRIES_VAR]?.value?.toString() || "[]",
+        );
+        state.shouldAdjustMultiplier =
+          (resp.variables[ADJUST_PROBS_VAR]?.value?.valueOf() as boolean) ||
+          false;
+
+        updateEntries();
       }
+
+      updateEntries();
     })
     .catch(function (err) {
       console.error("getGlobal error:", err.message);
-      updateEntries("[]");
+      updateEntries();
     });
 });
 
 client.on("Misc.GlobalVariableUpdated", (eventData) => {
-  if (eventData.data && eventData.data.name === ENTRIES_VAR) {
-    updateEntries(eventData.data.newValue);
+  if (eventData.data) {
+    if (eventData.data.name === ENTRIES_VAR) {
+      state.rawEntries = parseEntries(eventData.data.newValue);
+      updateEntries();
+    } else if (eventData.data.name === ADJUST_PROBS_VAR) {
+      state.shouldAdjustMultiplier = eventData.data.newValue;
+      updateEntries();
+    }
   }
 });
 

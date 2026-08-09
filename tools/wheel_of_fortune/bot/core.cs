@@ -11,6 +11,8 @@ public class CPHInline
     private const int SPIN_DURATION = 5;
 
     private const string ENTRIES_VAR_NAME = "wofEntries";
+    private const string ADJUST_PROBS_VAR_NAME = "wofAdjustProbs";
+    private const string DECAY_FACTOR_VAR_NAME = "wofDecayFactor";
 
     private const string SPIN_WHEEL_EVENT = "SpinTheWheel";
     private const string WHEEL_RESULT_EVENT = "WheelResult";
@@ -51,11 +53,12 @@ public class CPHInline
         }
 
         var entries = GetEntries();
-        entries.Add(new Entry { name=name, multiplier=multiplier});
+        entries.Add(new Entry { name=name, multiplier=multiplier, pickCount=0, adjustedMultiplier=multiplier });
 
+        ApplyAdjustedMultipliers(entries);
         SaveEntries(entries);
 
-        var probs = MultiplierToProbabilities(entries);
+        var probs = MultiplierToProbabilities(entries, false);
         SendMessage($"Added {name} to the Wheel with a probability of {(probs.Last() * 100)}%");
 
         return true;
@@ -83,9 +86,10 @@ public class CPHInline
         }
 
         entries.RemoveAt(idx);
-        SendMessage($"Removed {args[0]} from the Wheel");
-
+        ApplyAdjustedMultipliers(entries);
         SaveEntries(entries);
+
+        SendMessage($"Removed {args[0]} from the Wheel");
 
         return true;
     }
@@ -93,7 +97,7 @@ public class CPHInline
     public bool SpinWheel()
     {
         var entries = GetEntries();
-        var idx = PickRandEntry(entries);
+        var idx = PickRandEntry(entries, ShouldAdjustMultiplier());
 
         var payload = new Dictionary<string, object>
         {
@@ -107,13 +111,17 @@ public class CPHInline
 
         CPH.TriggerCodeEvent(WHEEL_RESULT_EVENT, payload);
 
+        entries[idx].pickCount++;
+        ApplyAdjustedMultipliers(entries);
+        SaveEntries(entries);
+
         SendMessage($"Result: {entries[idx].name}");
         return true;
     }
 
-    private int PickRandEntry(List<Entry> entries)
+    private int PickRandEntry(List<Entry> entries, bool adjusted)
     {
-        return PickRandEntry(MultiplierToProbabilities(entries));
+        return PickRandEntry(MultiplierToProbabilities(entries, adjusted));
     }
 
     private int PickRandEntry(List<float> entries)
@@ -130,15 +138,86 @@ public class CPHInline
         return selected;
     }
 
-    private List<float> MultiplierToProbabilities(List<Entry> entries)
+    private List<float> MultiplierToProbabilities(List<Entry> entries, bool adjusted)
     {
-        int total = 0;
-        foreach (Entry entry in entries)
+        if (adjusted)
         {
-            total += entry.multiplier;
+            float total = 0;
+            foreach (Entry entry in entries)
+            {
+                total += entry.adjustedMultiplier;
+            }
+
+            return entries.ConvertAll<float>(entry => (float)entry.adjustedMultiplier / total);
+        }
+        else
+        {
+            int total = 0;
+            foreach (Entry entry in entries)
+            {
+                total += entry.multiplier;
+            }
+
+            return entries.ConvertAll<float>(entry => (float)entry.multiplier / total);
+        }
+    }
+
+    private float GetDecayFactor()
+    {
+        string decayStr = CPH.GetGlobalVar<string>(DECAY_FACTOR_VAR_NAME, false);
+        if (!string.IsNullOrWhiteSpace(decayStr))
+        {
+            if (float.TryParse(decayStr, out float decay))
+            {
+                return decay;
+            }
+        }
+        return 0.8f;
+    }
+
+    private bool ShouldAdjustMultiplier()
+    {
+        string enabledStr = CPH.GetGlobalVar<string>(ADJUST_PROBS_VAR_NAME, false);
+        if (!string.IsNullOrWhiteSpace(enabledStr))
+        {
+            return enabledStr.ToLower() == "true" || enabledStr == "1";
+        }
+        return false;
+    }
+
+    private float GetAdjustedMultiplier(Entry entry, int minPickCount)
+    {
+        if (entry.pickCount == minPickCount)
+        {
+            return entry.multiplier;
         }
 
-        return entries.ConvertAll<float>(entry => (float)entry.multiplier / total);
+        float decayFactor = GetDecayFactor();
+        int exponent = entry.pickCount - minPickCount;
+        return entry.multiplier * (float)Math.Pow(decayFactor, exponent);
+    }
+
+    private void ApplyAdjustedMultipliers(List<Entry> entries)
+    {
+        int minPickCount = entries.Min(e => e.pickCount);
+
+        foreach (Entry entry in entries)
+        {
+            entry.adjustedMultiplier = GetAdjustedMultiplier(entry, minPickCount);
+        }
+    }
+
+    public bool ResetPickCount()
+    {
+        var entries = GetEntries();
+        foreach (Entry entry in entries)
+        {
+            entry.pickCount = 0;
+        }
+        ApplyAdjustedMultipliers(entries);
+        SaveEntries(entries);
+        SendMessage("Pick counts reset for all entries");
+        return true;
     }
 
     private int GetNumArg() => GetNumArg(1);
@@ -187,8 +266,18 @@ public class CPHInline
 
         if (string.IsNullOrWhiteSpace(entriesJson)) { return new List<Entry>(); }
 
-        return JsonConvert.DeserializeObject<List<Entry>>(entriesJson)
-               ?? new List<Entry>();
+        var entries = JsonConvert.DeserializeObject<List<Entry>>(entriesJson)
+                      ?? new List<Entry>();
+
+        foreach (Entry entry in entries)
+        {
+            if (entry.pickCount == 0 && entry.adjustedMultiplier == 0)
+            {
+                entry.adjustedMultiplier = entry.multiplier;
+            }
+        }
+
+        return entries;
     }
 
 
@@ -220,6 +309,8 @@ public class CPHInline
     {
         public string name { get; set; }
         public int multiplier { get; set; }
+        public int pickCount { get; set; }
+        public float adjustedMultiplier { get; set; }
     }
 
 }

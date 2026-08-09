@@ -24,6 +24,8 @@
         --color-6: #1abc9c;
         --color-7: #e91e63;
         --color-8: #00bcd4;
+
+        --default-opacity: 0;
       }
 
       * {
@@ -44,7 +46,7 @@
       #container {
         position: relative;
         transition: opacity 1s ease-in-out;
-        opacity: 0;
+        opacity: var(--default-opacity);
       }
 
       #wheel {
@@ -101,7 +103,7 @@
       }
 
       .fade-out {
-        opacity: 0 !important;
+        opacity: var(--default-opacity) !important;
       }
 
       .hidden {
