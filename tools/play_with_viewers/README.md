@@ -8,7 +8,7 @@ The actions added to Streamer.bot are configurable. The following _Persisted Glo
 
 | Option            | Default | Description                                                      |
 | ----------------- | ------- | ---------------------------------------------------------------- |
-| `viewerQueue`     | `[]`    | **DON'T MODIFY!** The current state of the queue                  |
+| `viewerQueue`     | `[]`    | **DON'T MODIFY!** The current state of the queue                 |
 | `viewerLive`      | `0`     | Number of viewers in the queue that can be live at the same time |
 | `viewerQueueMsg`  | /       | Message, that is printed when opening the queue                  |
 | `viewerQueueOpen` | `false` | Whether the queue is closed or open                              |
@@ -42,7 +42,8 @@ The following chat commands are available for queue management:
 | `!add {user}`            | Add a user to the queue                                                                                                         |
 | `!remove {user}`         | Remove a user from the queue                                                                                                    |
 | `!close`                 | Closes the queue. Viewers can't join or leave anymore. The queue can still be rotated and players can be added/removed by mods. |
-| `!open`                  | Opens the Queue                                                                                                                 |
+| `!open`                  | Open the Queue                                                                                                                  |
+| `!clear`                 | Clear the Queue                                                                                                                 |
 | `!rotate ?{number}`      | Rotate the queue by the specified number of viewers. Rotate by **one** if no number is specified.                               |
 | `!next ?{number}`        | Move the queue by the specified number of viewers. Move by **one** if no number is specified                                    |
 | `!livePlayers ?{number}` | Change the number of live players. Shows current number of live players if no number is given                                   |

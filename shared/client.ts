@@ -3,7 +3,6 @@ import type { StreamerbotClient } from "@streamerbot/client";
 declare global {
   interface Window {
     StreamerbotClient: typeof StreamerbotClient;
-    overlayConfig: OverlayConfig;
   }
 }
 

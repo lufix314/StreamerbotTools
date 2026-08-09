@@ -1,18 +1,19 @@
 {
   "name": "streamerbot_tools",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.js",
-    "dev": "node esbuild.config.js watch & python -m http.server 3000 -d build",
+    "dev": "node esbuild.config.js watch & http-server --port 3000 build",
     "clean": "rm -rf build/*"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "esbuild-plugin-alias": "^0.2.1",
-    "typescript": "^5.0.0"
+    "http-server": "^14.1.1",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@streamerbot/client": "^1.12.2"
+    "@streamerbot/client": "^2.0.1"
   }
 }

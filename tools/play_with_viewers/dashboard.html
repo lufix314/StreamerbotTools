@@ -1,427 +1,193 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Queue Dashboard</title>
-    <style>
-      :root {
-        --bg-color: #ffffff;
-        --text-color: #1a1a1a;
-        --card-bg: #f5f5f5;
-        --border-color: #e0e0e0;
-        --accent-color: #9147ff;
-        --accent-hover: #7c38e0;
-        --danger-color: #e04040;
-        --danger-hover-color: #ff4040;
-        --success-color: #40c040;
-        --drag-bg: #e8e0ff;
-      }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Queue Dashboard</title>
+        <link rel="stylesheet" href="shared.css" />
+        <style>
+            .quick-actions {
+                justify-content: space-evenly;
+            }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-color: #1a1a1a;
-          --text-color: #f0f0f0;
-          --card-bg: #2a2a2a;
-          --border-color: #404040;
-          --accent-color: #a863ff;
-          --accent-hover: #b873ff;
-          --danger-color: #ff6060;
-          --danger-hover-color: #ff4040;
-          --success-color: #60ff60;
-          --drag-bg: #3a3050;
-        }
-      }
+            .action {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+            .queue-list {
+                list-style: none;
+            }
 
-      body {
-        font-family: "Segoe UI", Roboto, sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        padding: 20px;
-        min-height: 100vh;
-      }
+            .queue-container {
+                display: flex;
+                align-items: baseline;
+            }
 
-      h1,
-      h2 {
-        font-weight: 600;
-      }
+            .queue-item {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px;
+                background: var(--bg-color);
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                margin-bottom: 8px;
+                cursor: grab;
+                transition: transform 0.2s, border-color 0.2s;
+            }
 
-      h1 {
-        font-size: 24pt;
-        margin-bottom: 20px;
-      }
+            .queue-item:hover {
+                border-color: var(--accent-color);
+            }
 
-      h2 {
-        font-size: 18pt;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-      }
+            .queue-item.dragging {
+                opacity: 0.5;
+                transform: scale(1.01);
+            }
 
-      .hint {
-        font-size: 12pt;
-        font-weight: 200;
-        opacity: 0.8;
-        vertical-align: center;
-      }
+            .queue-item.drag-over {
+                border-color: var(--accent-color);
+                border-style: dashed;
+            }
 
-      section {
-        background: var(--card-bg);
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
-        border: 1px solid var(--border-color);
-      }
+            .queue-item-info {
+                display: flex;
+                align-items: center;
+            }
 
-      .input-group {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin: 8px 0;
-      }
+            .queue-item-actions {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
 
-      label {
-        font-size: 12pt;
-      }
+            .queue-item-index {
+                font-weight: bold;
+                color: var(--accent-color);
+                min-width: 24px;
+            }
 
-      input[type="number"],
-      input[type="text"] {
-        padding: 8px 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        background: var(--bg-color);
-        color: var(--text-color);
-        font-size: 14px;
-        min-width: 80px;
-      }
+            .queue-item-name {
+                font-weight: 500;
+            }
 
-      input:focus {
-        outline: 2px solid var(--accent-color);
-        border-color: transparent;
-      }
+            .kick-btn {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: var(--danger-color);
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 8px;
+            }
 
-      textarea {
-        padding: 8px 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        background: var(--bg-color);
-        color: var(--text-color);
-        font-size: 14px;
-        font-family: inherit;
-        resize: vertical;
-        width: 100%;
-      }
+            .kick-btn:hover:not(:disabled) {
+                background: var(--danger-hover-color);
+            }
 
-      textarea:focus {
-        outline: 2px solid var(--accent-color);
-        border-color: transparent;
-      }
+            .kick-btn:focus:not(:disabled) {
+                outline: 2px solid var(--danger-color);
+                outline-offset: 2px;
+            }
 
-      button {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        background: var(--accent-color);
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
+            .kick-btn svg {
+                width: 14px;
+                height: 14px;
+            }
 
-      button:hover:not(:disabled) {
-        background: var(--accent-hover);
-      }
+            .live-badge {
+                padding: 2px 8px;
+                background: var(--accent-color);
+                color: white;
+                border-radius: 12px;
+                font-size: 10pt;
+            }
 
-      button:focus {
-        outline: 2px solid var(--accent-color);
-        outline-offset: 2px;
-      }
-
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .button-box {
-        display: flex;
-        justify-content: flex-end;
-      }
-
-      .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 28px;
-      }
-
-      .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-
-      .toggle-slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--border-color);
-        transition: 0.3s;
-        border-radius: 4px;
-      }
-
-      .toggle-slider:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: 0.3s;
-        border-radius: 4px;
-      }
-
-      input:checked + .toggle-slider {
-        background-color: var(--accent-color);
-      }
-
-      input:checked + .toggle-slider:before {
-        transform: translateX(22px);
-      }
-
-      input:focus + .toggle-slider {
-        outline: 2px solid var(--accent-color);
-        outline-offset: 2px;
-      }
-
-      input:disabled + .toggle-slider {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .small-btn {
-        font-size: 12px;
-        padding: 4px 12px;
-      }
-
-      .quick-actions {
-        display: flex;
-        justify-content: space-evenly;
-      }
-
-      .action-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .queue-list {
-        list-style: none;
-      }
-
-      .queue-container {
-        display: flex;
-        align-items: baseline;
-      }
-
-      .queue-item {
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px;
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        margin-bottom: 8px;
-        cursor: grab;
-        transition:
-          transform 0.2s,
-          border-color 0.2s;
-      }
-
-      .queue-item:hover {
-        border-color: var(--accent-color);
-      }
-
-      .queue-item.dragging {
-        opacity: 0.5;
-        transform: scale(1.01);
-      }
-
-      .queue-item.drag-over {
-        border-color: var(--accent-color);
-        border-style: dashed;
-      }
-
-      .queue-item-info {
-        display: flex;
-        align-items: center;
-      }
-
-      .queue-item-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .queue-item-index {
-        font-weight: bold;
-        color: var(--accent-color);
-        min-width: 24px;
-      }
-
-      .queue-item-name {
-        font-weight: 500;
-      }
-
-      .kick-btn {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: var(--danger-color);
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 8px;
-      }
-
-      .kick-btn:hover:not(:disabled) {
-        background: var(--danger-hover-color);
-      }
-
-      .kick-btn:focus:not(:disabled) {
-        outline: 2px solid var(--danger-color);
-        outline-offset: 2px;
-      }
-
-      .kick-btn svg {
-        width: 14px;
-        height: 14px;
-      }
-
-      .live-badge {
-        padding: 2px 8px;
-        background: var(--accent-color);
-        color: white;
-        border-radius: 12px;
-        font-size: 10pt;
-      }
-
-      .empty-queue {
-        text-align: center;
-        color: var(--text-color);
-        opacity: 0.6;
-        padding: 40px;
-      }
-
-      main {
-        max-width: 800px;
-        margin: 0 auto;
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
-      @media (max-width: 600px) {
-        body {
-          padding: 12px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>Queue Dashboard</h1>
-
-      <section aria-labelledby="settings-heading">
-        <h2 id="settings-heading">
-          Settings
-          <div class="input-group">
-            <label for="queue-open-toggle" class="hidden">Queue Open:</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="queue-open-toggle" />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </h2>
-        <div class="input-group">
-          <label for="viewer-live">Viewers Live:</label>
-          <input type="number" id="viewer-live" min="0" max="100" value="1" />
-        </div>
-        <div class="input-group">
-          <label for="queue-msg">Queue Message:</label>
-          <textarea
-            id="queue-msg"
-            rows="3"
-            placeholder="The queue is open. Join with !join"
-            style="margin-top: 4px"
-          ></textarea>
-        </div>
-        <div class="button-box">
-          <button id="save-settings-btn">Save</button>
-        </div>
-      </section>
-
-      <section aria-labelledby="actions-heading">
-        <h2 id="actions-heading">Quick Actions</h2>
-        <div class="quick-actions">
-          <div class="action-row">
-            <label for="rotate-count" class="hidden">Rotate count:</label>
-            <input
-              type="number"
-              id="rotate-count"
-              min="1"
-              max="100"
-              value="1"
-              aria-label="Rotate count"
-            />
-            <button id="rotate-btn">Rotate</button>
-          </div>
-          <div class="action-row">
-            <label for="next-count" class="hidden">Next count:</label>
-            <input
-              type="number"
-              id="next-count"
-              min="1"
-              max="100"
-              value="1"
-              aria-label="Next count"
-            />
-            <button id="next-btn">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="queue-heading">
-        <h2 id="queue-heading">
-          <span>Queue <span class="hint">(drag to reorder)</span></span>
-          <button id="clear-queue-btn" class="small-btn">Clear</button>
-        </h2>
-        <ul id="queue-list" class="queue-list">
-          <li class="empty-queue">No viewers in queue</li>
-        </ul>
-      </section>
-    </main>
-
-    <script type="module" src="config.js"></script>
-    <script type="module" src="dashboard.js"></script>
-  </body>
+            .empty-queue {
+                text-align: center;
+                color: var(--text-color);
+                opacity: 0.6;
+                padding: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Queue Dashboard</h1>
+            <section aria-labelledby="settings-heading">
+                <div class="header">
+                    <h2 id="settings-heading">Settings</h2>
+                    <div class="input-row">
+                        <label for="queue-open-toggle" class="hidden">Queue Open:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="queue-open-toggle" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div>
+                        <label for="viewer-live">Viewers Live:</label>
+                        <input type="number" id="viewer-live" min="0" max="100" value="1" />
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="queue-msg">Queue Message:</label>
+                        <textarea id="queue-msg"
+                                  rows="3"
+                                  placeholder="The queue is open. Join with !join"></textarea>
+                    </div>
+                </div>
+                <div class="button-right">
+                    <button id="save-settings-btn">Save</button>
+                </div>
+            </section>
+            <section aria-labelledby="actions-heading">
+                <h2 id="actions-heading">Quick Actions</h2>
+                <div class="input-row quick-actions">
+                    <div class="action">
+                        <label for="rotate-count" class="hidden">Rotate count:</label>
+                        <input type="number"
+                               id="rotate-count"
+                               min="1"
+                               max="100"
+                               value="1"
+                               aria-label="Rotate count" />
+                        <button id="rotate-btn">Rotate</button>
+                    </div>
+                    <div class="action">
+                        <label for="next-count" class="hidden">Next count:</label>
+                        <input type="number"
+                               id="next-count"
+                               min="1"
+                               max="100"
+                               value="1"
+                               aria-label="Next count" />
+                        <button id="next-btn">Next</button>
+                    </div>
+                </div>
+            </section>
+            <section aria-labelledby="queue-heading">
+                <div class="header">
+                    <h2 id="queue-heading">
+                        <span>Queue <span class="hint">(drag to reorder)</span></span>
+                    </h2>
+                    <button id="clear-queue-btn">Clear</button>
+                </div>
+                <ul id="queue-list" class="queue-list">
+                    <li class="empty-queue">No viewers in queue</li>
+                </ul>
+            </section>
+        </main>
+        <script type="module" src="config.js"></script>
+        <script type="module" src="dashboard.js"></script>
+    </body>
 </html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Commands - Streamer.bot Tools</title>
+        <link rel="stylesheet" href="shared.css" />
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 8px;
+            }
+
+            th,
+            td {
+                padding: 10px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            th {
+                font-weight: 600;
+                background: var(--bg-color);
+            }
+
+            td.command {
+                font-family: "Consolas", "Monaco", monospace;
+                font-size: 13px;
+                color: var(--accent-color);
+                white-space: nowrap;
+            }
+
+            td.description {
+                font-size: 14px;
+            }
+
+            .syntax-hint {
+                padding: 12px;
+                background: var(--bg-color);
+                border-radius: 4px;
+                border: 1px solid var(--border-color);
+            }
+
+            .syntax-hint p {
+                margin-bottom: 6px;
+                font-size: 14px;
+            }
+
+            .syntax-hint p:last-child {
+                margin-bottom: 0;
+            }
+
+            .syntax-hint code {
+                font-family: "Consolas", "Monaco", monospace;
+                background: var(--card-bg);
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 13px;
+            }
+
+            .no-commands {
+                padding: 20px;
+                text-align: center;
+                opacity: 0.7;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Commands</h1>
+            <section>
+                <h2>Tool</h2>
+                <div class="input-group" id="tool-select-group">
+                    <label for="tool-select" class="hidden">Select Tool</label>
+                    <select id="tool-select"></select>
+                </div>
+            </section>
+            <section>
+                <h2>Command Syntax</h2>
+                <div class="syntax-hint">
+                    <p><code>!command</code> - Basic command (no arguments)</p>
+                    <p><code>!command {type}</code> - Command with required argument. Replace <code>{type}</code> with an actual input of the given type.</p>
+                    <p><code>!command ?{type}</code> - Command with optional argument. Can be omitted.</p>
+                    <p><code>!command {"value" or type}</code> - Argument with multiple options. Choose on of the given types (e.g. <code>!command value</code>).</p>
+                </div>
+            </section>
+            <section id="everyone-commands-section" class="hidden">
+                <h2>Everyone</h2>
+                <table id="everyone-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            <section id="moderator-commands-section" class="hidden">
+                <h2>Moderators</h2>
+                <table id="moderator-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            <section id="no-commands" class="hidden">
+                <p class="no-commands">No commands available for this tool.</p>
+            </section>
+        </main>
+        <script type="module" src="commands.js"></script>
+    </body>
+</html>
