@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    overlayConfig: Config;
+    overlayConfig?: Config;
   }
 }
 

@@ -110,7 +110,7 @@ public class CPHInline
     {
         int num = GetNumArg();
         var queue = GetQueue();
-        queue.RemoveRange(0, num);
+        queue.RemoveRange(0, Math.Min(num, queue.Count));
         queue = FixQueue(queue);
         SaveQueue(queue);
         SendMessage(ListLive(queue));
@@ -121,8 +121,11 @@ public class CPHInline
     {
         int num = GetNumArg();
         var queue = GetQueue();
+
+        num = num % queue.Count;
         var players = queue.GetRange(0, num);
         queue.RemoveRange(0, num);
+
         queue.AddRange(players);
         queue = FixQueue(queue);
         SaveQueue(queue);
@@ -273,12 +276,19 @@ public class CPHInline
         return sb.ToString();
     }
 
+    // Get correct Twitch username from name
+    // Throws exception if the user doesn't exist
     private string GetTwitchUserName(string name)
     {
-        name = name.TrimStart('@');
-        var userInfo = CPH.TwitchGetUserInfoByLogin(name);
+        try 
+        {
+            name = name.TrimStart('@');
+            var userInfo = CPH.TwitchGetUserInfoByLogin(name);
 
-        return userInfo.UserName;
+            return userInfo.UserName;
+        } catch {
+            throw new Exception($"Could not find user '{name}'!");
+        }
     }
 
     // Get viewer name from argument, throws if missing
@@ -332,7 +342,7 @@ public class CPHInline
     {
         string queueJson = CPH.GetGlobalVar<string>(QUEUE_VAR_NAME, true);
 
-        if (string.IsNullOrWhiteSpace(queueJson)) { return List<Quote>(); }
+        if (string.IsNullOrWhiteSpace(queueJson)) { return new List<Player>(); }
 
         return JsonConvert.DeserializeObject<List<Player>>(queueJson)
                ?? new List<Player>();

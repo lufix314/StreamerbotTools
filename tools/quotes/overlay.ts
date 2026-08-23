@@ -83,10 +83,10 @@ function handleVideoEnd(video: HTMLVideoElement) {
     video.classList.add("fade-out");
     //video.removeAttribute("src");
     video.load();
-  }, 1050);
+  }, 1000);
 }
 
-// Play Twitch Clip using inoficial GraphQL API
+// Play Twitch Clip using unofficial GraphQL API
 // Based on the work done in mustachedmaniac.com/extensions/brb-clip-player
 async function showClip(clipId: string) {
   try {
@@ -155,14 +155,18 @@ async function showClip(clipId: string) {
       }
     });
 
-    video.addEventListener("ended", () => {
+    const onVideoEnd = () => {
       if (hasEnded) {
         return;
       }
       hasEnded = true;
       clearInterval(checkInterval);
       handleVideoEnd(video);
-    });
+    };
+
+    video.addEventListener("ended", onVideoEnd);
+
+    video.addEventListener("error", onVideoEnd);
   } catch (err) {
     console.error(err);
   }

@@ -106,8 +106,8 @@ In OBS, open your Browser Source properties and find the **Custom CSS** field. P
 
 ```css
 :root {
-  --queue-color: #ffffff;
-  --queue-font: "Segoe UI", Roboto, sans-serif;
+  --text-color: #ffffff;
+  --font: "Segoe UI", Roboto, sans-serif;
   --live-dot-color: #ff0000;
 }
 ```

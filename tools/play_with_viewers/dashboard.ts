@@ -3,6 +3,7 @@ import type {
   StreamerbotEventPayload,
 } from "@streamerbot/client";
 import { getClient, doAction } from "shared/client";
+import { parseJsonArray } from "shared/state";
 
 /** Viewer in the queue */
 interface QueueViewer {
@@ -31,7 +32,7 @@ const ACTION_NAMES = {
   CLOSE_QUEUE: "Close Queue",
   CLEAR_QUEUE: "Clear Queue",
   SET_QUEUE_MESSAGE: "Set Queue Message",
-  KICK_FROM_QUEUE: "Kick from Queue"
+  KICK_FROM_QUEUE: "Kick from Queue",
 } as const;
 
 /** names of streamerbot variables */
@@ -80,7 +81,7 @@ function createQueueItem(viewer: QueueViewer, index: number): HTMLElement {
   infoDiv.appendChild(indexSpan);
   infoDiv.appendChild(nameSpan);
 
-  itemDiv.appendChild(infoDiv)
+  itemDiv.appendChild(infoDiv);
 
   // const actionsDiv = document.createElement("div");
   // actionsDiv.className = "queue-item-actions";
@@ -354,10 +355,7 @@ async function fetchQueue(client: StreamerbotClient) {
     const resp = await client.getGlobal(VARIABLE_NAMES.QUEUE);
     if (resp?.status === "ok" && resp.variable) {
       const jsonStr = resp.variable.value?.toString() || "[]";
-      state.queue = JSON.parse(jsonStr);
-      if (!Array.isArray(state.queue)) {
-        state.queue = [];
-      }
+      state.queue = parseJsonArray(jsonStr);
     } else {
       state.queue = [];
     }
@@ -366,15 +364,6 @@ async function fetchQueue(client: StreamerbotClient) {
     state.queue = [];
   }
   renderQueue();
-}
-
-function parseQueue(json: string): QueueViewer[] {
-  try {
-    const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
 }
 
 /** Handles global variable updates from StreamerBot */
@@ -387,7 +376,7 @@ function handleGlobalVariableUpdated(
   const { name, newValue } = data;
 
   if (name === VARIABLE_NAMES.QUEUE) {
-    state.queue = parseQueue(newValue);
+    state.queue = parseJsonArray(newValue);
     renderQueue();
   } else if (name === VARIABLE_NAMES.VIEWER_LIVE) {
     setViewerLive(newValue);

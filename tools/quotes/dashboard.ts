@@ -3,6 +3,7 @@ import type {
   StreamerbotEventPayload,
 } from "@streamerbot/client";
 import { getClient, doAction } from "shared/client";
+import { parseJsonArray } from "shared/state";
 
 /** Quote data structure matching the C# Quote class */
 interface Quote {
@@ -171,7 +172,7 @@ async function fetchQuotes(client: StreamerbotClient) {
     const resp = await client.getGlobal(VARIABLE_NAMES.QUOTES);
     if (resp?.status === "ok" && resp.variable) {
       const jsonStr = resp.variable.value?.toString() || "[]";
-      state.quotes = parseQuotes(jsonStr);
+      state.quotes = parseJsonArray(jsonStr);
     } else {
       state.quotes = [];
     }
@@ -180,15 +181,6 @@ async function fetchQuotes(client: StreamerbotClient) {
     state.quotes = [];
   }
   renderQuotes();
-}
-
-function parseQuotes(json: string): Quote[] {
-  try {
-    const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
 }
 
 /** Handles global variable updates from StreamerBot */
@@ -201,7 +193,7 @@ function handleGlobalVariableUpdated(
   const { name, newValue } = data;
 
   if (name === VARIABLE_NAMES.QUOTES) {
-    state.quotes = parseQuotes(newValue);
+    state.quotes = parseJsonArray(newValue);
     renderQuotes();
   }
 }

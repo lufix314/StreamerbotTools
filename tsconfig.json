@@ -9,10 +9,10 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "composite": true,
-    "baseUrl": ".",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "paths": {
-      "shared/*": ["shared/*"]
+      "shared/*": ["./shared/*"]
     }
   },
   "include": ["shared/**/*", "tools/**/*", "startpage/**/*"],
