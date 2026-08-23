@@ -21,6 +21,9 @@ The actions added to Streamer.bot are configurable. The following _Persisted Glo
 
 ## Commands
 
+> [!NOTE]
+> All available commands can also be found [here](https://lufix314.github.io/StreamerbotTools/commands?tool=quotes).
+
 The following chat commands are available for quotes management:
 
 ### Everyone
