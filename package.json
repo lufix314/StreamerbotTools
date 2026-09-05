@@ -3,7 +3,8 @@
   "version": "0.7.0",
   "type": "module",
   "scripts": {
-    "build": "node esbuild.config.js",
+    "check": "tsc --noEmit",
+    "build": "rm -rf build/* && node esbuild.config.js",
     "dev": "node esbuild.config.js watch & http-server --port 3000 build",
     "clean": "rm -rf build/*"
   },

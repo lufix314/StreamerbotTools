@@ -9,11 +9,16 @@ const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 const TOOLS_DIR = join(ROOT_DIR, "tools");
 const BUILD_DIR = join(ROOT_DIR, "build");
 
-const packageJson = JSON.parse(await readFile(join(ROOT_DIR, "package.json"), "utf-8"));
-const CDN_VERSION = packageJson.dependencies["@streamerbot/client"].replace(/^[~^>=<]+/, "");
+const packageJson = JSON.parse(
+  await readFile(join(ROOT_DIR, "package.json"), "utf-8"),
+);
+const CDN_VERSION = packageJson.dependencies["@streamerbot/client"].replace(
+  /^[~^>=<]+/,
+  "",
+);
 const CDN_SCRIPT = `  <script src="https://cdn.jsdelivr.net/npm/@streamerbot/client@${CDN_VERSION}/dist/streamerbot-client.js"></script>\n`;
 
-const IGNORED_ASSETS = ["ts", "html", "cs", "json", "md"];
+const WHITELIST_ASSETS = ["sb", "css", "png", "jpg", "svg", "json"];
 
 async function getTools() {
   const tools = await readdir(TOOLS_DIR, { withFileTypes: true });
@@ -48,7 +53,7 @@ function getCommonOptions(outDir, shared, watch) {
   };
 }
 
-async function getStartpageBuildConfig(shared, watch = false) {
+function getStartpageBuildConfig(shared, watch = false) {
   const startpageDir = join(ROOT_DIR, "startpage");
   const indexPath = join(startpageDir, "index.ts");
   const htmlPath = join(startpageDir, "index.html");
@@ -81,7 +86,7 @@ async function copyStartpageHtml(tools, outDir, htmlPath, commandsHtmlPath) {
   console.log(`Copied and updated commands.html for startpage`);
 }
 
-async function getBuildConfig(toolName, shared, watch = false) {
+function getBuildConfig(toolName, shared, watch = false) {
   const toolDir = join(TOOLS_DIR, toolName);
   const outDir = join(BUILD_DIR, toolName);
 
@@ -122,7 +127,7 @@ async function copySharedCss(outDir) {
 }
 
 async function copyAssets(toolDir, outDir) {
-  const entries = await readdir(toolDir, { withFileTypes: true });
+  const entries = await readdir(toolDir, { withFileTypes: true, recursive: true });
 
   for (const entry of entries) {
     const sourcePath = join(toolDir, entry.name);
@@ -130,7 +135,7 @@ async function copyAssets(toolDir, outDir) {
 
     if (entry.isFile()) {
       const ext = basename(entry.name).split(".").pop();
-      if (!IGNORED_ASSETS.includes(ext) && !entry.name.startsWith(".")) {
+      if (WHITELIST_ASSETS.includes(ext) && !entry.name.startsWith(".")) {
         await mkdir(dirname(destPath), { recursive: true });
         await copyFile(sourcePath, destPath);
         console.log(`Copied asset: ${entry.name} for ${basename(toolDir)}`);
@@ -143,9 +148,7 @@ async function buildAll() {
   const tools = await getTools();
   const shared = await getSharedAliases();
 
-  const configs = await Promise.all(
-    tools.map((tool) => getBuildConfig(tool, shared, false)),
-  );
+  const configs = tools.map((tool) => getBuildConfig(tool, shared, false));
 
   const promises = configs.map(
     async ({
@@ -185,7 +188,7 @@ async function buildAll() {
     htmlPath: startpageHtml,
     commandsIndexPath: commandsIndexPath,
     commandsHtmlPath: commandsHtmlPath,
-  } = await getStartpageBuildConfig(shared, false);
+  } = getStartpageBuildConfig(shared, false);
   await build({
     ...startpageOptions,
     entryPoints: [startpageIndex, commandsIndexPath],
@@ -200,9 +203,7 @@ async function watchAll() {
   const tools = await getTools();
   const shared = await getSharedAliases();
 
-  const configs = await Promise.all(
-    tools.map((tool) => getBuildConfig(tool, shared, true)),
-  );
+  const configs = tools.map((tool) => getBuildConfig(tool, shared, true));
 
   const contexts = await Promise.all(
     configs.map(
@@ -222,6 +223,7 @@ async function watchAll() {
             ...(existsSync(configPath) ? [configPath] : []),
           ],
           plugins: [
+            ...commonOptions.plugins,
             {
               name: "assets-copier",
               setup(build) {
@@ -246,7 +248,7 @@ async function watchAll() {
     htmlPath: startpageHtml,
     commandsIndexPath: commandsIndexPath,
     commandsHtmlPath: commandsHtmlPath,
-  } = await getStartpageBuildConfig(shared, true);
+  } = getStartpageBuildConfig(shared, true);
   contexts.push(
     await context({
       ...startpageOptions,

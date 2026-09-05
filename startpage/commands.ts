@@ -1,5 +1,5 @@
-import { ToolCommand, ToolCommands, ToolInfo } from "shared/types";
-import { populateToolSelect } from "shared/utils";
+import { ToolCommand, ToolInfo } from "shared/types";
+import { populateToolSelect, getToolInfo } from "shared/utils";
 
 declare const DISCOVERED_TOOLS: string[];
 
@@ -12,22 +12,6 @@ const state: State = {};
 function getToolFromUrlParams(): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get("tool");
-}
-
-async function getToolInfo(tool: string, baseUrl: string): Promise<ToolInfo> {
-  try {
-    const req = await fetch(`${baseUrl}/${tool}/info.json`);
-
-    if (!req.ok) {
-      console.warn(`Failed to fetch tool info for ${tool}: ${req.status}`);
-      return { hasDashboard: true, hasOverlay: true, commands: {} };
-    }
-
-    return await req.json();
-  } catch (error) {
-    console.error(`Error fetching tool info for ${tool}:`, error);
-    return { hasDashboard: true, hasOverlay: true, commands: {} };
-  }
 }
 
 function renderCommandsTable(
