@@ -94,6 +94,66 @@ public class CPHInline
         return true;
     }
 
+    public bool WheelDecay()
+    {
+        if (!CPH.TryGetArg("input0", out string arg) || string.IsNullOrWhiteSpace(arg))
+        {
+            bool enabled = ShouldAdjustMultiplier();
+            if (enabled) {
+                SendMessage($"Adjusted probabilities enabled with decay factor {GetDecayFactor()}");
+            } else
+            {
+                SendMessage("Adjusted probabilities disabled");
+            }
+
+            return true;
+        }
+
+        if (arg == "reset")
+        {
+            return ResetPickCount();
+        }
+
+        if (arg == "off")
+        {
+            SetAdjustMultiplier(false);
+            SendMessage("Adjusted probabilities disabled");
+
+            return true;
+        }
+
+        if (arg == "on")
+        {
+            SetAdjustMultiplier(true);
+            SendMessage($"Adjusted probabilities enabled with decay factor {GetDecayFactor()}");
+
+            return true;
+        }
+
+        try
+        {
+            float decayFactor = float.Parse(arg);
+
+            SetAdjustMultiplier(true);
+            SetDecayFactor(decayFactor);
+
+            // Update entries with new multiplier
+            var entries = GetEntries();
+            ApplyAdjustedMultipliers(entries);
+            SaveEntries(entries);
+
+            SendMessage($"Adjusted probabilities enabled with decay factor {decayFactor}");
+            return true;
+        }
+        catch
+        {
+            SendMessage("Invalid argument! Argument must be 'reset', 'off', 'on' or a number");
+            return false;
+        }
+
+        return false;
+    }
+
     public bool SpinWheel()
     {
         var entries = GetEntries();
@@ -164,7 +224,7 @@ public class CPHInline
 
     private float GetDecayFactor()
     {
-        string decayStr = CPH.GetGlobalVar<string>(DECAY_FACTOR_VAR_NAME, false);
+        string decayStr = CPH.GetGlobalVar<string>(DECAY_FACTOR_VAR_NAME, true);
         if (!string.IsNullOrWhiteSpace(decayStr))
         {
             if (float.TryParse(decayStr, out float decay))
@@ -175,14 +235,24 @@ public class CPHInline
         return 0.8f;
     }
 
+    private void SetDecayFactor(float value)
+    {
+        CPH.SetGlobalVar(DECAY_FACTOR_VAR_NAME, value, true);
+    }
+
     private bool ShouldAdjustMultiplier()
     {
-        string enabledStr = CPH.GetGlobalVar<string>(ADJUST_PROBS_VAR_NAME, false);
+        string enabledStr = CPH.GetGlobalVar<string>(ADJUST_PROBS_VAR_NAME, true);
         if (!string.IsNullOrWhiteSpace(enabledStr))
         {
             return enabledStr.ToLower() == "true" || enabledStr == "1";
         }
         return false;
+    }
+
+    private void SetAdjustMultiplier(bool state)
+    {
+        CPH.SetGlobalVar(ADJUST_PROBS_VAR_NAME, state, true);
     }
 
     private float GetAdjustedMultiplier(Entry entry, int minPickCount)
