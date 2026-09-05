@@ -24,6 +24,10 @@ Display a live queue of viewers waiting to play with you. Perfect for gaming str
 
 Manage stream quotes and optionally link them to a twitch clip and display them on stream.
 
+### [Wheel of Fortune](/tools/wheel_of_fortune/README.md)
+
+Pick a random item from a wheel of fortune and show the wheel on stream. Optionally adjust probabilities depending on how often an item was picked.
+
 ## Setup
 
 ### Prerequisites
