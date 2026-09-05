@@ -1,116 +1,117 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Queue</title>
-    <style>
-      :root {
-        --font: "Segoe UI", Roboto, sans-serif;
-        --text-color: #ffffff;
-        --background-color: #00000080;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Queue</title>
+        <style>
+            :root {
+                --font: "Segoe UI", Roboto, sans-serif;
+                --text-color: #ffffff;
+                --background-color: #00000080;
 
-        --queue-padding: 8px;
-        --queue-min-width: 120px;
-        --border-radius: 4px;
+                --queue-padding: 8px;
+                --queue-min-width: 120px;
+                --border-radius: 4px;
 
-        --header-font-size: 24px;
-        --header-font-weight: 700;
+                --header-font-size: 24px;
+                --header-font-weight: 700;
 
-        --header-hint: "!join";
+                --header-hint: "!join";
 
-        --separator-space-above: 8px;
-        --separator-space-below: 8px;
-        --separator: 2px solid rgba(255, 255, 255, 0.2);
+                --separator-space-above: 8px;
+                --separator-space-below: 8px;
+                --separator: 2px solid rgba(255, 255, 255, 0.2);
 
-        --viewer-font-size: 20px;
-        --viewer-padding: 6px 0;
+                --viewer-font-size: 20px;
+                --viewer-padding: 6px 0;
 
-        --slide-duration: 0.3s;
-        --slide-stagger: 0.05s;
+                --slide-duration: 0.3s;
+                --slide-stagger: 0.05s;
 
-        --live-dot-color: #9147ff;
-        --live-dot-size: 10px;
-        --live-dot-padding: 8px;
-      }
+                --live-dot-color: #9147ff;
+                --live-dot-size: 10px;
+                --live-dot-padding: 8px;
+            }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-      body {
-        background: transparent;
-        font-family: var(--font);
-        color: var(--text-color);
-        display: flex
-      }
+            body {
+                background: transparent;
+                font-family: var(--font);
+                color: var(--text-color);
+                display: flex
+            }
 
-      #queue-container {
-        min-width: var(--queue-min-width);
-        padding: var(--queue-padding);
-        background: var(--background-color);
-        border-radius: var(--border-radius);
-      }
+            #queue-container {
+                min-width: var(--queue-min-width);
+                padding: var(--queue-padding);
+                background: var(--background-color);
+                border-radius: var(--border-radius);
+                overflow: hidden;
+                max-height: 100vh;
+            }
 
-      #queue-header {
-        font-size: var(--header-font-size);
-        font-weight: var(--header-font-weight);
-        margin-bottom: var(--separator-space-below);
-        padding-bottom: var(--separator-space-below);
-        border-bottom: var(--separator);
-      }
+            #queue-header {
+                font-size: var(--header-font-size);
+                font-weight: var(--header-font-weight);
+                margin-bottom: var(--separator-space-below);
+                padding-bottom: var(--separator-space-below);
+                border-bottom: var(--separator);
+            }
 
-      #queue-header::after {
-        content: var(--header-hint);
-        font-size: 12pt;
-        font-weight: 200;
-        vertical-align: center;
-        padding: 0 8px;
-      }
+            #queue-header::after {
+                content: var(--header-hint);
+                font-size: 12pt;
+                font-weight: 200;
+                vertical-align: center;
+                padding: 0 8px;
+            }
 
-      .viewer-entry {
-        font-size: var(--viewer-font-size);
-        padding: var(--viewer-padding);
-        opacity: 0;
-        transform: translateX(-10px);
-        animation: slideIn var(--slide-duration) ease forwards;
-        display: flex;
-        align-items: center;
-      }
+            .viewer-entry {
+                font-size: var(--viewer-font-size);
+                padding: var(--viewer-padding);
+                opacity: 0;
+                transform: translateX(-10px);
+                animation: slideIn var(--slide-duration) ease forwards;
+                display: flex;
+                align-items: center;
+            }
 
-      .live-dot {
-        width: var(--live-dot-size);
-        height: var(--live-dot-size);
-        border-radius: 50%;
-        background: var(--live-dot-color);
-        margin-right: var(--live-dot-padding);
-        flex-shrink: 0;
-      }
+            .live-dot {
+                width: var(--live-dot-size);
+                height: var(--live-dot-size);
+                border-radius: 50%;
+                background: var(--live-dot-color);
+                margin-right: var(--live-dot-padding);
+                flex-shrink: 0;
+            }
 
-      @keyframes slideIn {
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
+            @keyframes slideIn {
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
 
-      #no-connection {
-        font-style: italic;
-        color: red;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="queue-container">
-      <div id="queue-header">Queue</div>
-      <div id="queue-list">
-        <div id="no-connection">Overlay Could not connect to Streamer.bot</div>
-      </div>
-    </div>
-
-    <script type="module" src="config.js"></script>
-    <script type="module" src="overlay.js"></script>
-  </body>
+            #no-connection {
+                font-style: italic;
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="queue-container">
+            <div id="queue-header">Queue</div>
+            <div id="queue-list">
+                <div id="no-connection">Overlay Could not connect to Streamer.bot</div>
+            </div>
+        </div>
+        <script type="module" src="config.js"></script>
+        <script type="module" src="overlay.js"></script>
+    </body>
 </html>
