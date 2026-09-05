@@ -7,6 +7,7 @@ interface QuotePayload {
 }
 
 const RAND_QUOTE_EVENT = "RandomQuoteSelected";
+
 const TWITCH_GQL_ENDPOINT = "https://gql.twitch.tv/gql";
 const TWITCH_CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
 
@@ -200,3 +201,4 @@ function handleCustomCodeEvent(eventData: any) {
 }
 
 client.on("Custom.CodeEvent", handleCustomCodeEvent);
+

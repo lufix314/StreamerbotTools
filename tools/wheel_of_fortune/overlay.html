@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wheel of Fortune</title>
+    <style>
+      :root {
+        --font: "Segoe UI", Roboto, sans-serif;
+        --font-size: 14pt;
+        --text-color: #fff;
+        --show-result-duration: 3s;
+
+        --result-background: #1a1a1a;
+        --result-text-color: #ffffff;
+        --result-text-font-size: 48px;
+        --result-text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+
+        --color-1: #e74c3c;
+        --color-2: #3498db;
+        --color-3: #2ecc71;
+        --color-4: #f39c12;
+        --color-5: #9b59b6;
+        --color-6: #1abc9c;
+        --color-7: #e91e63;
+        --color-8: #00bcd4;
+
+        --default-opacity: 0;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: transparent;
+        font-family: var(--font);
+        font-size: var(--font-size);
+        color: var(--text-color);
+        display: flex;
+        justify-content: center;
+      }
+
+      #container {
+        position: relative;
+        transition: opacity 1s ease-in-out;
+        opacity: var(--default-opacity);
+      }
+
+      #wheel {
+        display: block;
+      }
+
+      #pointer {
+        position: absolute;
+        top: 50%;
+        left: calc(100% - 35px);
+        transform: translateX(-50%) translateY(-50%) rotate(90deg);
+        width: 0;
+        height: 0;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-top: 40px solid var(--text-color);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        z-index: 10;
+      }
+
+      #no-connection {
+        font-style: italic;
+        color: red;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+      }
+
+      #result-card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100vw;
+        transform: translate(-50%, -50%);
+        background: var(--result-background);
+        padding: 40px 60px;
+        border-radius: 16px;
+        opacity: 0;
+        transition: opacity .5s ease-in-out;
+        z-index: 100;
+      }
+
+      .result-name {
+        font-size: var(--result-text-font-size);
+        font-weight: bold;
+        color: var(--result-text-color);
+        text-shadow: var(--result-text-shadow);
+      }
+
+      .fade-in {
+        opacity: 1 !important;
+      }
+
+      .fade-out {
+        opacity: var(--default-opacity) !important;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <canvas id="wheel"></canvas>
+      <div id="pointer"></div>
+    </div>
+    <div id="result-card">
+      <span class="result-name"></span>
+    </div>
+
+    <div id="no-connection">Overlay Could not connect to Streamer.bot</div>
+
+    <script type="module" src="config.js"></script>
+    <script type="module" src="overlay.js"></script>
+  </body>
+</html>
