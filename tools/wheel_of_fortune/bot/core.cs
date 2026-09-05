@@ -115,7 +115,7 @@ public class CPHInline
         ApplyAdjustedMultipliers(entries);
         SaveEntries(entries);
 
-        SendMessage($"Result: {entries[idx].name}");
+        SendMessage($"{entries[idx].name}", true);
         return true;
     }
 
@@ -287,11 +287,17 @@ public class CPHInline
         CPH.SetGlobalVar(ENTRIES_VAR_NAME, entriesJson, true);
     }
 
-    private void SendMessage(string msg)
+    private void SendMessage(string msg, bool announce = false)
     {
         if (!isSilent())
         {
-            CPH.SendMessage(msg, true, true);
+            if (announce)
+            {
+                CPH.TwitchAnnounce(msg, true, "default", true);
+            } else
+            {
+                CPH.SendMessage(msg, true, true);
+            }
         }
     }
 
