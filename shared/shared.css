@@ -140,6 +140,16 @@ textarea:focus {
   width: 100%;
 }
 
+label.required::after {
+  content: " *";
+  color: var(--danger-color);
+}
+
+input:required:user-invalid,
+textarea:required:user-invalid {
+  border-color: var(--danger-color);
+}
+
 /* ========== Toggle Switch ========== */
 
 .toggle-switch {
@@ -246,6 +256,16 @@ button a {
 .header button {
   padding: 4px 16px;
   margin-bottom: 8px;
+}
+
+.quick-actions {
+  justify-content: space-evenly;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ========== Responsive ========== */

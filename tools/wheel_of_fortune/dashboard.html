@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Wheel of Fortune Dashboard</title>
+        <link rel="stylesheet" href="shared.css" />
+        <style>
+            #name-input-group {
+                flex-shrink: 0.2
+            }
+
+            #entries-list {
+                list-style: none;
+            }
+
+            .entry-container {
+                display: flex;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+
+            .entry {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px;
+                background: var(--bg-color);
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                transition: border-color 0.2s;
+            }
+
+            .entry:hover {
+                border-color: var(--accent-color);
+            }
+
+            .entry-info {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .entry-name {
+                min-width: 50vw
+            }
+
+            .entry-index {
+                font-weight: bold;
+                color: var(--accent-color);
+                font-size: 10pt;
+            }
+
+            .entry-name {
+                font-size: 14px;
+                font-style: italic;
+            }
+
+            .entry-multiplier,
+            .entry-pick-count {
+                font-size: 12px;
+                opacity: 0.8;
+            }
+
+            .delete-btn {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: var(--danger-color);
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 8px;
+            }
+
+            .delete-btn:hover:not(:disabled) {
+                background: var(--danger-hover-color);
+            }
+
+            .delete-btn:focus:not(:disabled) {
+                outline: 2px solid var(--danger-color);
+                outline-offset: 2px;
+            }
+
+            .empty-list {
+                text-align: center;
+                color: var(--text-color);
+                opacity: 0.6;
+                padding: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Wheel of Fortune Dashboard</h1>
+            <section aria-labelledby="actions-heading">
+                <h2 id="actions-heading">Quick Actions</h2>
+                <div class="input-row quick-actions">
+                    <div class="action">
+                        <label for="adjust-probs-toggle">Adjust Probabilities:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="adjust-probs-toggle" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="action">
+                        <label for="decay-factor">Decay Factor:</label>
+                        <input type="number"
+                               id="decay-factor"
+                               min="0"
+                               max="1"
+                               step="0.05"
+                               value="1"
+                               aria-label="Decay Factor" />
+                    </div>
+                    <div class="action">
+                        <button id="reset-btn">Reset Pick Count</button>
+                    </div>
+                    <div class="action">
+                        <button id="spin-btn">Spin</button>
+                    </div>
+                </div>
+            </section>
+            <section aria-labelledby="add-entry-heading">
+                <h2 id="add-entry-heading">New Entry</h2>
+                <form id="add-entry-form" novalidate>
+                    <div class="input-row">
+                        <div class="input-group" id="name-input-group">
+                            <label for="name-input" class="required">Name:</label>
+                            <input type="text"
+                                   id="name-input"
+                                   name="name"
+                                   placeholder="Entry name..."
+                                   required />
+                        </div>
+                        <div class="input-group">
+                            <label for="multiplier-input" class="required">Multiplier:</label>
+                            <input type="number"
+                                   id="multiplier-input"
+                                   name="multiplier"
+                                   value="10"
+                                   required />
+                        </div>
+                    </div>
+                    <div class="button-right">
+                        <button type="submit">Add Entry</button>
+                    </div>
+                </form>
+            </section>
+            <section aria-labelledby="entries-heading">
+                <h2 id="entries-heading">
+                    <span>Entries <span id="entries-count" class="hint">(0)</span></span>
+                </h2>
+                <ul id="entries-list">
+                    <li class="empty-list">No entries available</li>
+                </ul>
+            </section>
+        </main>
+        <script type="module" src="config.js"></script>
+        <script type="module" src="dashboard.js"></script>
+    </body>
+</html>

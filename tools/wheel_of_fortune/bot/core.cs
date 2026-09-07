@@ -40,6 +40,13 @@ public class CPHInline
         }
 
         string name = args[0];
+        var entries = GetEntries();
+
+        var idx = entries.FindIndex((e) => e.name == args[0]);
+        if (idx >= 0) {
+            SendMessage("Unable to create Entry! Entry with this name already exists");
+            return false;
+        }
 
         int multiplier;
         try
@@ -52,7 +59,6 @@ public class CPHInline
             return false;
         }
 
-        var entries = GetEntries();
         entries.Add(new Entry { name=name, multiplier=multiplier, pickCount=0, adjustedMultiplier=multiplier });
 
         ApplyAdjustedMultipliers(entries);

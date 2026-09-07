@@ -10,11 +10,11 @@
       },
       {
         "command": "!addToWheel {name} {multiplier}",
-        "description": "Add a new entry to the wheel with the given multiplier. Use quotes for a name with spaces (i.e.`!addToWheel \"Long Entry Name\" 1`)"
+        "description": "Add a new entry to the wheel with the given multiplier. Use quotes for a name with spaces (i.e.!addToWheel \"Long Entry Name\" 1)"
       },
       {
-        "command": "!removeFromWheel {index}",
-        "description": "Removes entry with the given index (This is the index of the entry in the list so for example the 9th entry has the index `8`)"
+        "command": "!removeFromWheel {name}",
+        "description": "Removes entry with the given name. Use quotes for a name with spaces (i.e.!removeFromWheel \"Long Entry Name\")"
       }
     ]
   }

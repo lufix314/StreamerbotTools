@@ -6,7 +6,7 @@
         <title>Quotes Dashboard</title>
         <link rel="stylesheet" href="shared.css" />
         <style>
-            .quotes-list {
+            #quotes-list {
                 list-style: none;
             }
 
@@ -99,16 +99,6 @@
                 opacity: 0.6;
                 padding: 40px;
             }
-
-            label.required::after {
-                content: " *";
-                color: var(--danger-color);
-            }
-
-            input:required:user-invalid,
-            textarea:required:user-invalid {
-                border-color: var(--danger-color);
-            }
         </style>
     </head>
     <body>
@@ -151,7 +141,7 @@
                 <h2 id="quotes-heading">
                     <span>Quotes <span id="quotes-count" class="hint">(0)</span></span>
                 </h2>
-                <ul id="quotes-list" class="quotes-list">
+                <ul id="quotes-list">
                     <li class="empty-list">No quotes available</li>
                 </ul>
             </section>

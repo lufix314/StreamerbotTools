@@ -54,7 +54,7 @@ The following chat commands are available for queue management:
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `!spin`                                             | Spin the wheel                                                                                                                                                        |
 | `!addToWheel {name} {multiplier}`                   | Add a new entry to the wheel with the given multiplier. Use quotes for a name with spaces (i.e.`!addToWheel "Long Entry Name" 1`)                                     |
-| `!removeFromWheel {index}`                          | Removes entry with the given index (This is the index of the entry in the list so for example the 9th entry has the index `8`)                                        |
+| `!removeFromWheel {name}`                           | Removes entry with the given name. Use quotes for a name with spaces (i.e.`!removeFromWheel "Long Entry Name"`)                                                       |
 | `!wheelDecay ?{'reset' or 'on' or 'off' or number}` | Depending on the argument enables, disables resets or modifies the adjustment of probabilities. If no argument is given the current settings are printed to the chat. |
 
 ## Custom CSS

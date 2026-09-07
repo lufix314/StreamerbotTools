@@ -1,12 +1,13 @@
 import { ToolInfo } from "shared/types";
 
 export function formatToolName(tool: string): string {
-  return tool
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+  return tool.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
-export async function getToolInfo(tool: string, baseUrl: string): Promise<ToolInfo> {
+export async function getToolInfo(
+  tool: string,
+  baseUrl: string,
+): Promise<ToolInfo> {
   try {
     const req = await fetch(`${baseUrl}/${tool}/info.json`);
 
@@ -22,11 +23,10 @@ export async function getToolInfo(tool: string, baseUrl: string): Promise<ToolIn
   }
 }
 
-
 export function populateToolSelect(
   selectId: string,
   tools: string[],
-  selectedTool?: string
+  selectedTool?: string,
 ): void {
   const select = document.getElementById(selectId) as HTMLSelectElement;
   if (!select) return;
@@ -51,4 +51,8 @@ export function copyToClipboard(content: string, button: HTMLElement) {
       button.textContent = originalText;
     }, 1000);
   });
+}
+
+export function displayFloat(value: number, places: number): string {
+  return value.toFixed(places).replace(/0*$/, "").replace(/\.$/, "");
 }
