@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Globalization;
 using Newtonsoft.Json;
 
 public class CPHInline
@@ -138,7 +139,13 @@ public class CPHInline
 
         try
         {
-            float decayFactor = float.Parse(arg);
+            if (arg.Contains(","))
+            {
+                SendMessage($"Please use '.' as decimal separator instead of ','");
+                return false;
+            }
+
+            float decayFactor = float.Parse(arg, CultureInfo.InvariantCulture.NumberFormat); // Always use '.' as decimal separator
 
             SetAdjustMultiplier(true);
             SetDecayFactor(decayFactor);

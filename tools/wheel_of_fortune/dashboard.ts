@@ -242,25 +242,26 @@ async function populateQuickActions(client: StreamerbotClient) {
         decayFactor.value = "0.8";
       }
     }
-    {
-      const resp = await client.getGlobal(VARIABLE_NAMES.ADJUST_PROBS);
-
-      if (resp?.status === "ok" && resp.variable) {
-        const value = (resp.variable.value?.valueOf() as boolean) || false;
-
-        adjustProbsToggle.checked = value;
-        state.adjustProbs = value;
-      } else {
-        adjustProbsToggle.checked = false;
-      }
-    }
   } catch (err) {
-    console.error(
-      `getGlobal ${VARIABLE_NAMES.DECAY_FACTOR} or ${VARIABLE_NAMES.ADJUST_PROBS} error:`,
-      err,
-    );
+    console.error(`getGlobal ${VARIABLE_NAMES.DECAY_FACTOR} error:`, err);
 
     decayFactor.value = "0.8";
+  }
+
+  try {
+    const resp = await client.getGlobal(VARIABLE_NAMES.ADJUST_PROBS);
+
+    if (resp?.status === "ok" && resp.variable) {
+      const value = (resp.variable.value?.valueOf() as boolean) || false;
+
+      adjustProbsToggle.checked = value;
+      state.adjustProbs = value;
+    } else {
+      adjustProbsToggle.checked = false;
+    }
+  } catch (err) {
+    console.error(`getGlobal ${VARIABLE_NAMES.ADJUST_PROBS} error:`, err);
+
     adjustProbsToggle.checked = false;
   }
 }
