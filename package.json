@@ -1,6 +1,6 @@
 {
   "name": "streamerbot_tools",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",

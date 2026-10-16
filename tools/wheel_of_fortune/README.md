@@ -25,6 +25,13 @@ With this wheel you can optionally enable adjusted probabilities. When enabled t
 
 The decay factor `wofDecayFactor` controls how much the multiplier is modified. It is a number between `0` and `1`, where a high value means less change to the modifier and a low value means more change.
 
+### Import / Export Entries
+
+The dashboard offers an **Export** and **Import** button in the *Entries* section to back up or transfer your wheel.
+
+- **Export** downloads a JSON file containing all entries with their name, multiplier (weight) and pick count.
+- **Import** reads such a JSON file and replaces the entire wheel with the full list of entries from the file.
+
 ## Streamer.bot Variables
 
 The actions added to Streamer.bot are configurable. The following _Persisted Global_ Variables control their behaviour.

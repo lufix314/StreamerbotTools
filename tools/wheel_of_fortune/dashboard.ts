@@ -14,6 +14,18 @@ interface Entry {
   adjustedMultiplier: number;
 }
 
+/** Wheel entry data structure used by the import/export */
+interface EntryFile {
+  name: string;
+  multiplier: number;
+  pickCount?: number;
+}
+
+/** Top-level format of the import/export */
+interface EntryFileSet {
+  entries: EntryFile[];
+}
+
 /** Application state */
 const state = {
   adjustProbs: false,
@@ -25,6 +37,7 @@ const ACTION_NAMES = {
   SPIN_WHEEL: "Spin Wheel",
   ADD_ENTRY: "Add WOF Entry",
   REMOVE_ENTRY: "Remove WOF Entry",
+  SET_ENTRIES: "Set Entries",
   MANAGE_ADJUST_PROBS: "Manage Probability Decay",
 } as const;
 
@@ -44,6 +57,9 @@ const ELEMENT_IDS = {
   DECAY_FACTOR_INPUT: "decay-factor",
   RESET_BTN: "reset-btn",
   SPIN_BTN: "spin-btn",
+  EXPORT_BTN: "export-btn",
+  IMPORT_BTN: "import-btn",
+  IMPORT_FILE: "import-file",
 } as const;
 
 /** Create an item in the quotes list */
@@ -104,6 +120,100 @@ function renderEntries() {
     const li = createWheelEntry(entry, index);
     listEl.appendChild(li);
   });
+}
+
+/** Download all wheel entries (name, multiplier, pickCount) as a JSON file */
+function exportEntries() {
+  const payload: EntryFileSet = {
+    entries: state.entries,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `wheel-of-fortune-entries-${new Date().toISOString().slice(0, 10)}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+/** Parse and validate the contents of an import JSON file */
+function parseEntryFile(json: string): EntryFile[] {
+  const parsed: unknown = JSON.parse(json);
+
+  const rawEntries = (parsed as EntryFileSet)?.entries;
+  if (!Array.isArray(rawEntries)) {
+    throw new Error(
+      'Expected { "entries": [ ... ] } (or a plain array of entries)',
+    );
+  }
+
+  const seen = new Set<string>();
+  return rawEntries.map((item) => {
+    if (
+      !item ||
+      typeof item !== "object" ||
+      typeof item.name !== "string" ||
+      typeof item.multiplier !== "number" ||
+      !Number.isInteger(item.multiplier) ||
+      item.multiplier <= 0
+    ) {
+      throw new Error(`Invalid entry: "${JSON.stringify(item)}"`);
+    }
+
+    const entry: EntryFile = {
+      name: item.name.trim(),
+      multiplier: item.multiplier,
+    };
+    if (typeof item.pickCount === "number") {
+      entry.pickCount = item.pickCount;
+    }
+
+    if (seen.has(entry.name)) {
+      throw new Error(`Duplicate entry name: "${entry.name}"`);
+    }
+    seen.add(entry.name);
+
+    return entry;
+  });
+}
+
+/** Import the full entry list from a JSON file */
+async function importEntries(file: File) {
+  let entries: EntryFile[];
+  try {
+    entries = parseEntryFile(await file.text());
+  } catch (err) {
+    console.error("Failed to parse entries:", err);
+    return;
+  }
+
+  const importBtn = document.getElementById(
+    ELEMENT_IDS.IMPORT_BTN,
+  ) as HTMLButtonElement;
+  if (importBtn) importBtn.disabled = true;
+
+  try {
+    await doAction(client, ACTION_NAMES.SET_ENTRIES, {
+      // JSON array matching the bot's Entry class, pickCount optional
+      rawInput: JSON.stringify(
+        entries.map(({ name, multiplier, pickCount }) => ({
+          name,
+          multiplier,
+          pickCount: pickCount ?? 0,
+        })),
+      ),
+    });
+  } catch (err) {
+    console.error("Failed to import entries:", err);
+  } finally {
+    if (importBtn) importBtn.disabled = false;
+  }
+
+  await fetchEntries(client);
+  renderEntries();
 }
 
 async function removeEntry(name: string) {
@@ -202,9 +312,28 @@ function setupEventListeners() {
   spinBtn.addEventListener("click", () => {
     doAction(client, ACTION_NAMES.SPIN_WHEEL, {}, false);
   });
+
+  // Import / Export
+  const exportBtn = document.getElementById(
+    ELEMENT_IDS.EXPORT_BTN,
+  ) as HTMLButtonElement;
+  exportBtn.addEventListener("click", exportEntries);
+
+  const importBtn = document.getElementById(
+    ELEMENT_IDS.IMPORT_BTN,
+  ) as HTMLButtonElement;
+  const importFile = document.getElementById(
+    ELEMENT_IDS.IMPORT_FILE,
+  ) as HTMLInputElement;
+  importBtn.addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", () => {
+    const file = importFile.files?.[0];
+    if (file) importEntries(file);
+    importFile.value = "";
+  });
 }
 
-async function fetchQuotes(client: StreamerbotClient) {
+async function fetchEntries(client: StreamerbotClient) {
   try {
     const resp = await client.getGlobal(VARIABLE_NAMES.ENTRIES);
     if (resp?.status === "ok" && resp.variable) {
@@ -299,7 +428,7 @@ function handleGlobalVariableUpdated(
 }
 
 const client = getClient((c) => {
-  Promise.all([fetchQuotes(c), populateQuickActions(c)]).then(() =>
+  Promise.all([fetchEntries(c), populateQuickActions(c)]).then(() =>
     renderEntries(),
   );
 });

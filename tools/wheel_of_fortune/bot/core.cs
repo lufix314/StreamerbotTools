@@ -71,6 +71,24 @@ public class CPHInline
         return true;
     }
 
+    public bool SetEntries()
+    {
+        string entriesJson;
+        if (!CPH.TryGetArg("rawInput", out entriesJson) || string.IsNullOrWhiteSpace(entriesJson))
+        {
+            SendMessage("Missing input Argument");
+            return false;
+        }
+
+        var entries = JsonConvert.DeserializeObject<List<Entry>>(entriesJson)
+                      ?? new List<Entry>();
+
+        ApplyAdjustedMultipliers(entries);
+        SaveEntries(entries);
+
+        return true;
+    }
+
     public bool RemoveEntry()
     {
         var args = GetArgs();

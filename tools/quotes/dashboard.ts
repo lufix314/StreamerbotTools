@@ -29,6 +29,9 @@ const VARIABLE_NAMES = {
   QUOTES: "quotes",
 } as const;
 
+/** Regex matching valid Twitch clip IDs (alphanumeric plus dash/underscore) */
+const TWITCH_CLIP_ID_REGEX = /^[A-Za-z0-9_-]+$/;
+
 /** IDs of different HTML elements used in the dashboard */
 const ELEMENT_IDS = {
   ADD_QUOTE_FORM: "add-quote-form",
@@ -60,7 +63,11 @@ function createQuoteItem(quote: Quote, index: number): HTMLElement {
 
   itemDiv.appendChild(infoDiv);
 
-  if (quote.twitchClipId) {
+  // Only render the clip link for well-formed clip IDs.
+  if (
+    typeof quote.twitchClipId === "string" &&
+    TWITCH_CLIP_ID_REGEX.test(quote.twitchClipId)
+  ) {
     const clipLink = document.createElement("a");
     clipLink.className = "clip-link";
     clipLink.href = `https://clips.twitch.tv/${quote.twitchClipId}`;

@@ -151,9 +151,16 @@
                 </form>
             </section>
             <section aria-labelledby="entries-heading">
-                <h2 id="entries-heading">
-                    <span>Entries <span id="entries-count" class="hint">(0)</span></span>
-                </h2>
+                <div class="header">
+                    <h2 id="entries-heading">
+                        <span>Entries <span id="entries-count" class="hint">(0)</span></span>
+                    </h2>
+                    <div class="input-row">
+                        <button id="export-btn">Export</button>
+                        <button id="import-btn">Import</button>
+                        <input type="file" id="import-file" accept=".json,application/json" hidden />
+                    </div>
+                </div>
                 <ul id="entries-list">
                     <li class="empty-list">No entries available</li>
                 </ul>
